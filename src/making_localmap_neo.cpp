@@ -1,3 +1,12 @@
+//subscribe:
+//		/pointcloud/velodyne/rm_ground
+//		/pointcloud/velodyne/ground
+//		/pointcloud/hokuyo
+//		/pointcloud/realsense
+//
+//publish:
+//		/occupancygrid/localmap
+
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <nav_msgs/OccupancyGrid.h>
