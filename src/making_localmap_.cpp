@@ -1,8 +1,9 @@
 //subscribe:
 //		/pointcloud/velodyne/rm_ground
-//		/pointcloud/velodyne/ground
+//		/pointcloud/velodyne/ground/stored
 //		/pointcloud/hokuyo
 //		/pointcloud/realsense
+//		(all of frameid = base_link)
 //
 //publish:
 //		/occupancygrid/localmap
@@ -75,7 +76,7 @@ MakingLocalmap::MakingLocalmap()
       ground_sub(nh, "/ground", 10), 
 	  rmground_sub(nh, "/rm_ground", 10), 
 	  hokuyo_sub(nh, "/hokuyo", 10), 
-	  realsense_sub(nh, "realsense", 10),
+	  realsense_sub(nh, "/realsense", 10),
       making_localmap_sync(making_localmap_sync_subs(10), ground_sub, rmground_sub, hokuyo_sub, realsense_sub)
 {
     making_localmap_sync.registerCallback(boost::bind(&MakingLocalmap::Callback, this, _1, _2, _3, _4));
