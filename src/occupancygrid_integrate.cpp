@@ -107,22 +107,11 @@ void OccupancyGridCombination::CallbackGridHokuyo(const nav_msgs::OccupancyGridC
 
 void OccupancyGridCombination::CombineGrids(void)
 {
-	const bool zed_has_higher_priority = true;
-	if(zed_has_higher_priority){
-		for(size_t i=0;i<grid.data.size();i++){
-			if(grid_lidar.data[i]==100)	grid.data[i] = grid_lidar.data[i];
-			else if(grid_realsense.data[i]!=-1)	grid.data[i] = grid_realsense.data[i];
-			else if(grid_lidar.data[i]!=-1)	grid.data[i] = grid_lidar.data[i];
-		}
-	}
-	/*equal priority*/
-	else{
-		for(size_t i=0;i<grid.data.size();i++){
-			if(grid_lidar.data[i]==100)	grid.data[i] = grid_lidar.data[i];
-			else if(grid_lidar.data[i]==0 || grid_realsense.data[i]==0)	grid.data[i] = 0;
-			else if(grid_lidar.data[i]!=-1)	grid.data[i] = grid_lidar.data[i];
-			else if(grid_realsense.data[i]!=-1)	grid.data[i] = grid_realsense.data[i];
-		}
+
+	for(size_t i=0;i<grid.data.size();i++){
+		grid.data[i] = grid_lidar.data[i];
+		if(grid_realsense.data[i]!=-1) grid.data[i] = grid_realsense.data[i];
+		if(grid.data[i]!=100) grid.data[i] = grid_hokuyo.data[i];
 	}
 }
 
