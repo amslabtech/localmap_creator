@@ -1,5 +1,9 @@
 
 <launch>
+
+    <node pkg="tf" type="static_transform_publisher" name="baselink2velodyne" 
+          args="0.0 0.0 1.2 0.0 0.0 0.0 base_link velodyne 100" />
+
 	<!-- velodyne -->
     <include file="$(find velodyne_height_map)/launch/amsl_velodyne_heightmap.launch" />
     <include file="$(find velodyne_pointcloud)/launch/32e_points.launch" />
@@ -10,9 +14,16 @@
 		<remap from="/ground" to="/velodyne_clear"/>
 	</node>
 
+
+    <node pkg="making_local_map" type="pc_ground_store" name="pc_ground_store">
+		<remap from="/occupancygrid/lidar" to="/occupancygrid/lidar"/>
+		<remap from="/tinypower/odom" to="/odom"/>
+		<remap from="/occupancygrid/lidar/stored" to="/occupancygrid/lidar/stored"/>
+	</node>
+
 	<!-- rviz -->
 	<node pkg="rviz" type="rviz" name="rviz" args="/home/amsl/rviz/test.rviz"/>
 
 	<!-- rosbag play -->
-	<node pkg="rosbag" type="play" name="play" args="$(find velodyne_camera_calibration)/bagfiles/data.bag -l" />
+	<node pkg="rosbag" type="play" name="play" args="--clock $(find velodyne_camera_calibration)/bagfiles/data.bag -l" />
 </launch>
