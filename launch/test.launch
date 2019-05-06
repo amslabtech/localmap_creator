@@ -17,7 +17,7 @@
 
     <node pkg="making_local_map" type="pc_ground_store" name="pc_ground_store">
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/lidar"/>
-		<remap from="/tinypower/odom" to="/odom"/>
+		<!-- <remap from="/tinypower/odom" to="/odom"/> -->
 		<remap from="/occupancygrid/lidar/stored" to="/occupancygrid/lidar/stored"/>
 	</node>
 
@@ -25,5 +25,6 @@
 	<node pkg="rviz" type="rviz" name="rviz" args="/home/amsl/rviz/test.rviz"/>
 
 	<!-- rosbag play -->
-	<node pkg="rosbag" type="play" name="play" args="--clock $(find velodyne_camera_calibration)/bagfiles/data.bag -l" />
+	<node pkg="rosbag" type="play" name="play" args="--clock /home/amsl/bagfiles/2018-09-15-16-11-46.bag -l" />
+	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock $(find velodyne_camera_calibration)/bagfiles/data.bag &#45;l" /> -->
 </launch>
