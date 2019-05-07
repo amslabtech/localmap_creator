@@ -47,7 +47,7 @@ class MakingLocalmap{
 
 		const double w = 20.0;	//x[m]
 		const double h = 20.0;	//y[m]
-		const double resolution = 0.2;	//[m]
+		const double resolution = 0.1;	//[m]
 		
 		std::string pub_frameid;
 		ros::Time pub_stamp;

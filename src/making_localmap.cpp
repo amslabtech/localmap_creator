@@ -29,7 +29,7 @@ class OccupancyGridLidar{
 		/*const values*/
 		const double w = 20.0;	//x[m]
 		const double h = 20.0;	//y[m]
-		const double resolution = 0.2;	//[m]
+		const double resolution = 0.1;	//[m]
 		// const double range_road_intensity[2] = {5, 15};
 	public:
 		OccupancyGridLidar();
@@ -137,8 +137,8 @@ void OccupancyGridLidar::Publication(void)
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "occupancygrid_lidar");
-	std::cout << "= occupancygrid_lidar =" << std::endl;
+    ros::init(argc, argv, "making_localmap");
+	std::cout << "= making_localmap =" << std::endl;
 	
 	OccupancyGridLidar occupancygrid_lidar;
 
