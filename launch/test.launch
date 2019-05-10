@@ -15,11 +15,11 @@
 	</node>
 
 
-    <node pkg="making_local_map" type="pc_ground_store" name="pc_ground_store">
-		<remap from="/occupancygrid/lidar" to="/occupancygrid/lidar"/>
-		<!-- <remap from="/tinypower/odom" to="/odom"/> -->
-		<remap from="/occupancygrid/lidar/stored" to="/occupancygrid/lidar/stored"/>
-	</node>
+    <!-- <node pkg="making_local_map" type="pc_ground_store" name="pc_ground_store"> -->
+	<!-- 	<remap from="/occupancygrid/lidar" to="/occupancygrid/lidar"/> -->
+	<!-- 	<!&#45;&#45; <remap from="/tinypower/odom" to="/odom"/> &#45;&#45;> -->
+	<!-- 	<remap from="/occupancygrid/lidar/stored" to="/occupancygrid/lidar/stored"/> -->
+	<!-- </node> -->
 
 	<!-- rviz -->
 	<node pkg="rviz" type="rviz" name="rviz" args="/home/amsl/rviz/test.rviz"/>
