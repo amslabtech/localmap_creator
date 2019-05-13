@@ -10,6 +10,9 @@ RUN apt-get install -y sudo \
 RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-latest.list \
          && wget http://packages.osrfoundation.org/gazebo.key -O - | apt-key add -
 
+RUN apt-get install -y ros-kinetic-pcl* \
+                       libpcl-dev
+
 RUN apt-get update
 
 WORKDIR /root
