@@ -12,7 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   tf
-  PCL REQUIRED
   cv_bridge
   image_transport
   pcl_ros
