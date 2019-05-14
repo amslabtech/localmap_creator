@@ -25,6 +25,7 @@
 	<node pkg="rviz" type="rviz" name="rviz" args="/home/amsl/rviz/test.rviz"/>
 
 	<!-- rosbag play -->
-	<node pkg="rosbag" type="play" name="play" args="--clock /home/amsl/bagfiles/2018-09-15-16-11-46.bag -l" />
+	<node pkg="rosbag" type="play" name="play" args="--clock /home/amsl/bagfiles/ikuta_1st.bag -l" />
+	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock /home/amsl/bagfiles/2018&#45;09&#45;15&#45;16&#45;11&#45;46.bag &#45;l" /> -->
 	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock $(find velodyne_camera_calibration)/bagfiles/data.bag &#45;l" /> -->
 </launch>
