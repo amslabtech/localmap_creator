@@ -17,17 +17,20 @@ class My_Filter {
         ros::Subscriber scan_sub_;
 };
 My_Filter::My_Filter(){
-    scan_sub_ = nh.subscribe<sensor_msgs::LaserScan> ("/scan", 100, &My_Filter::scanCallback, this);
-    point_cloud_publisher_ = nh.advertise<sensor_msgs::PointCloud2> ("/cloud", 100, false);
+    scan_sub_ = nh.subscribe<sensor_msgs::LaserScan> ("/scan", 1, &My_Filter::scanCallback, this);
+    point_cloud_publisher_ = nh.advertise<sensor_msgs::PointCloud2> ("/cloud", 1);
     tfListener_.setExtrapolationLimit(ros::Duration(0.1));
 }
 
 void My_Filter::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan){
 	sensor_msgs::PointCloud2 cloud;
-	projector_.transformLaserScanToPointCloud("/base_link", *scan, cloud, tfListener_);
-	cloud.header.stamp = scan->header.stamp;
-	cloud.header.frame_id = "base_link";
-	point_cloud_publisher_.publish(cloud);
+	try{
+		projector_.transformLaserScanToPointCloud("/base_link", *scan, cloud, tfListener_);
+		point_cloud_publisher_.publish(cloud);
+	}
+	catch(tf::TransformException ex){
+		ROS_ERROR("%s",ex.what());
+	}
 }
 
 

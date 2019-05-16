@@ -9,10 +9,9 @@
     <include file="$(find velodyne_pointcloud)/launch/32e_points.launch" />
 
 	<!-- hokuyo -->
-	<node pkg="making_local_map" type="scan2pcl" name="scan2pcl">
+	<node pkg="making_local_map" type="scan2pcl" name="scan2pcl" output="screen">
 		<remap from="/scan" to="/front_lasr/scan"/>
 		<remap from="/cloud" to="/hokuyo_obstacles"/>
-		<remap from="/base_link" to="/base_link"/>
 	</node>
 
 
@@ -48,7 +47,4 @@
 
 	<!-- rosbag play -->
 	<node pkg="rosbag" type="play" name="play" args="--clock /home/amsl/bagfiles/realsense_2019-05-16-16-41-13.bag -l" />
-	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock /home/amsl/bagfiles/ikuta_1st.bag &#45;l" /> -->
-	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock /home/amsl/bagfiles/2018&#45;09&#45;15&#45;16&#45;11&#45;46.bag &#45;l" /> -->
-	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock $(find velodyne_camera_calibration)/bagfiles/data.bag &#45;l" /> -->
 </launch>
