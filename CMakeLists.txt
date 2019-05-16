@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
   pcl_ros
-
+  laser_geometry
 )
 
 ## System dependencies are found with CMake's conventions
@@ -206,14 +206,10 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-add_executable(making_localmap src/making_localmap.cpp)
-target_link_libraries(making_localmap ${catkin_LIBRARIES})
 add_executable(pc_transform src/pc_transform.cpp)
 target_link_libraries(pc_transform ${catkin_LIBRARIES})
 add_executable(pc_frameid_renamer src/pc_frameid_renamer.cpp)
 target_link_libraries(pc_frameid_renamer ${catkin_LIBRARIES})
-add_executable(pc_integrater src/pc_integrater.cpp)
-target_link_libraries(pc_integrater ${catkin_LIBRARIES})
 add_executable(all_pc_to_occupancygrid src/all_pc_to_occupancygrid.cpp)
 target_link_libraries(all_pc_to_occupancygrid ${catkin_LIBRARIES})
 add_executable(OccupancyGrid_store src/OccupancyGrid_store.cpp)
@@ -222,3 +218,5 @@ add_executable(occupancygrid_integrate src/occupancygrid_integrate.cpp)
 target_link_libraries(occupancygrid_integrate ${catkin_LIBRARIES})
 add_executable(hokuyo_raycast src/hokuyo_raycast.cpp)
 target_link_libraries(hokuyo_raycast ${catkin_LIBRARIES})
+add_executable(scan2pcl src/scan2pcl.cpp)
+target_link_libraries(scan2pcl ${catkin_LIBRARIES})
