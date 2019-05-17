@@ -5,8 +5,20 @@
     <include file="$(find making_local_map)/launch/tf.launch" />
 
 	<!-- velodyne -->
-    <include file="$(find velodyne_height_map)/launch/amsl_velodyne_heightmap.launch" />
     <include file="$(find velodyne_pointcloud)/launch/32e_points.launch" />
+	
+	<!-- min_max -->
+    <include file="$(find velodyne_height_map)/launch/amsl_velodyne_heightmap.launch" />
+	<!-- <node pkg="nodelet" type="nodelet" name="heightmap_realsense" -->
+    <!--     args="load velodyne_height_map/HeightMapNodelet velodyne_nodelet_manager"> -->
+	<!-- 	<param name="cell_size" value="0.1"/> -->
+	<!-- 	<param name="full_clouds" value="false"/> -->
+	<!-- 	<param name="grid_dimensions" value="50"/> -->
+	<!-- 	<param name="height_threshold" value="0.4"/> -->
+	<!-- 	<remap from="/velodyne_points" to="camera/depth_registered/points"/> -->
+	<!-- 	<remap from="/velodyne_obstacles" to="realsense_obstacles"/> -->
+	<!-- 	<remap from="/velodyne_clear" to="realsense_clear"/> -->
+	<!-- </node> -->
 
 	<!-- hokuyo -->
 	<node pkg="making_local_map" type="scan2pcl" name="scan2pcl" output="screen">
@@ -17,21 +29,20 @@
 
 	<!-- make each occupancygrid -->
 		<!-- velodyne -->
-	<node pkg="making_local_map" type="ground_and_obstacle_to_grid" name="velodyne_localmap">
+	<node pkg="making_local_map" type="ground_and_obstacles_to_grid" name="velodyne_localmap">
 		<remap from="/rm_ground" to="/velodyne_obstacles"/>
 		<remap from="/ground" to="/velodyne_clear"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/velodyne"/>
 	</node>
 		<!-- realsense -->
-	<node pkg="making_local_map" type="ground_and_obstacle_to_grid" name="realsense_localmap">
-		<remap from="/rm_ground" to="/velodyne_obstacles"/>
-		<remap from="/ground" to="/camera/depth_registered/points"/>
+	<node pkg="making_local_map" type="ground_and_obstacles_to_grid" name="realsense_localmap">
+		<remap from="/rm_ground" to="/realsense_obstacles"/>
+		<remap from="/ground" to="/realsense_clear"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/realsense"/>
 	</node>
 		<!-- hokuyo -->
-	<node pkg="making_local_map" type="ground_and_obstacle_to_grid" name="hokuyo_localmap">
-		<remap from="/rm_ground" to="/hokuyo_obstacles"/>
-		<remap from="/ground" to="/velodyne_clear"/>
+	<node pkg="making_local_map" type="hokuyo_raycast" name="hokuyo_localmap">
+		<remap from="/hokuyo_points" to="/hokuyo_obstacles"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/hokuyo"/>
 	</node>
 
