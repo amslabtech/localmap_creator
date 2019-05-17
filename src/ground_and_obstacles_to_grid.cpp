@@ -1,31 +1,44 @@
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/point_cloud_conversion.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/filters/passthrough.h>
 // #include <pcl/filters/crop_box.h>
-#include <pcl/features/normal_3d.h>
+#include <pcl/features/normal_3d.h> 
+#include <pcl_ros/point_cloud.h>
+#include <pcl_ros/transforms.h>
+#include <pcl/point_types.h>
 #include <tf/tf.h>
+#include <tf/transform_listener.h>
 
 class OccupancyGridLidar{
 	private:
 		ros::NodeHandle nh;
+		
 		/*subscribe*/
 		ros::Subscriber sub_rmground;
 		ros::Subscriber sub_ground;
+		
 		/*publish*/
 		ros::Publisher pub;
+		
 		/*cloud*/
 		pcl::PointCloud<pcl::PointXYZI>::Ptr rmground {new pcl::PointCloud<pcl::PointXYZI>};
 		pcl::PointCloud<pcl::PointXYZINormal>::Ptr ground {new pcl::PointCloud<pcl::PointXYZINormal>};
 		/*grid*/
 		nav_msgs::OccupancyGrid grid;
 		nav_msgs::OccupancyGrid grid_all_minusone;
+		
+		/*tf*/
+		tf::TransformListener tflistener;
+		
 		/*publish infomations*/
 		std::string pub_frameid;
 		ros::Time pub_stamp;
+		
 		/*const values*/
 		const double w = 20.0;	//x[m]
 		const double h = 20.0;	//y[m]
@@ -70,11 +83,19 @@ void OccupancyGridLidar::GridInitialization(void)/*{{{*/
 
 void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr &msg)/*{{{*/
 {
-	pcl::fromROSMsg(*msg, *rmground);
+	
+	sensor_msgs::PointCloud2 pc2_out;
+	try{
+		pcl_ros::transformPointCloud("/base_link", *msg, pc2_out, tflistener);
+	}
+	catch(tf::TransformException ex){
+		ROS_ERROR("%s",ex.what());
+	}
+	pcl::fromROSMsg(pc2_out, *rmground);
 
 	ExtractPCInRange(rmground);
 
-	pub_frameid = msg->header.frame_id;
+	pub_frameid = "/base_link";
 	pub_stamp = msg->header.stamp;
 
 	InputGrid();
@@ -84,8 +105,14 @@ void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr
 void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &msg)/*{{{*/
 {
 	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc {new pcl::PointCloud<pcl::PointXYZI>};
-	pcl::fromROSMsg(*msg, *tmp_pc);
-	
+	sensor_msgs::PointCloud2 pc2_out;
+	try{
+		pcl_ros::transformPointCloud("/base_link", *msg, pc2_out, tflistener);
+	}
+	catch(tf::TransformException ex){
+		ROS_ERROR("%s",ex.what());
+	}
+	pcl::fromROSMsg(pc2_out, *tmp_pc);
 	ExtractPCInRange(tmp_pc);
 	
 	pcl::copyPointCloud(*tmp_pc, *ground);

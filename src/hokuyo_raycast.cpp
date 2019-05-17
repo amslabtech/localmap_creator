@@ -13,7 +13,7 @@ class OccupancyGridLidar{
 	private:
 		ros::NodeHandle nh;
 		/*subscribe*/
-		ros::Subscriber sub_rmground;
+		ros::Subscriber sub;
 		/*publish*/
 		ros::Publisher pub;
 		/*cloud*/
@@ -43,7 +43,7 @@ class OccupancyGridLidar{
 
 OccupancyGridLidar::OccupancyGridLidar()
 {
-	sub_rmground = nh.subscribe("/rm_ground", 1, &OccupancyGridLidar::CallbackRmGround, this);
+	sub = nh.subscribe("/hokuyo_points", 1, &OccupancyGridLidar::CallbackRmGround, this);
 	pub = nh.advertise<nav_msgs::OccupancyGrid>("/occupancygrid/lidar", 1);
 	GridInitialization();
 }
