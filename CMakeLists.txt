@@ -221,3 +221,12 @@ add_executable(hokuyo_raycast src/hokuyo_raycast.cpp)
 target_link_libraries(hokuyo_raycast ${catkin_LIBRARIES})
 add_executable(scan2pcl src/scan2pcl.cpp)
 target_link_libraries(scan2pcl ${catkin_LIBRARIES})
+
+if(CATKIN_ENABLE_TESTING)
+	find_package(rostest REQUIRED)
+	add_rostest_gtest(making_localmap_test 
+		test/making_localmap.test
+		test/making_localmap_test.cpp
+	)
+	target_link_libraries(making_localmap_test ${catkin_LIBRARIES})
+endif()
