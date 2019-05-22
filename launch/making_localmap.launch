@@ -1,14 +1,14 @@
 
 <launch>
-    <param name="use_sim_time" value="true"/>
-	<!-- tf -->
-    <include file="$(find making_local_map)/launch/tf.launch" />
-
-	<!-- velodyne -->
-    <include file="$(find velodyne_pointcloud)/launch/32e_points.launch" />
-	
-	<!-- min_max -->
-    <include file="$(find velodyne_height_map)/launch/amsl_velodyne_heightmap.launch" />
+    <!-- <param name="use_sim_time" value="true"/> -->
+	<!-- <!&#45;&#45; tf &#45;&#45;> -->
+    <!-- <include file="$(find making_local_map)/launch/tf.launch" /> -->
+    <!--  -->
+	<!-- <!&#45;&#45; velodyne &#45;&#45;> -->
+    <!-- <!&#45;&#45; <include file="$(find velodyne_pointcloud)/launch/32e_points.launch" /> &#45;&#45;> -->
+	<!--  -->
+	<!-- <!&#45;&#45; min_max &#45;&#45;> -->
+    <!-- <include file="$(find velodyne_height_map)/launch/amsl_velodyne_heightmap.launch" /> -->
 	<node pkg="nodelet" type="nodelet" name="heightmap_realsense"
         args="load velodyne_height_map/HeightMapNodelet velodyne_nodelet_manager">
 		<param name="cell_size" value="0.1"/>
@@ -54,8 +54,8 @@
 	</node>
 
 	<!-- rviz -->
-	<node pkg="rviz" type="rviz" name="rviz" args="/home/amsl/rviz/test.rviz"/>
+	<!-- <node pkg="rviz" type="rviz" name="rviz" args="/home/amsl/rviz/test.rviz"/> -->
 
 	<!-- rosbag play -->
-	<node pkg="rosbag" type="play" name="play" args="--clock /home/amsl/bagfiles/realsense_2019-05-16-16-41-13.bag -l" />
+	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock /home/amsl/bagfiles/realsense_2019&#45;05&#45;16&#45;16&#45;41&#45;13.bag &#45;l" /> -->
 </launch>
