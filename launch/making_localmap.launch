@@ -1,6 +1,5 @@
 
 <launch>
-
     <param name="use_sim_time" value="true"/>
 	<!-- tf -->
     <include file="$(find making_local_map)/launch/tf.launch" />
@@ -16,14 +15,14 @@
 
 	<!-- min_max -->
     <include file="$(find velodyne_height_map)/launch/amsl_velodyne_heightmap.launch" />
-
 	<node pkg="nodelet" type="nodelet" name="heightmap_realsense"
         args="load velodyne_height_map/HeightMapNodelet velodyne_nodelet_manager">
 		<param name="cell_size" value="0.1"/>
-		<param name="full_clouds" value="false"/>
+		<param name="full_clouds" value="true"/>
 		<param name="grid_dimensions" value="50"/>
-		<param name="height_threshold" value="0.4"/>
-		<remap from="/velodyne_points" to="/realsense/downsampled"/>
+		<param name="height_threshold" value="0.3"/>
+		<!-- <remap from="/velodyne_points" to="/realsense/downsampled"/> -->
+		<remap from="/velodyne_points" to="/camera/depth_registered/points"/>
 		<remap from="/velodyne_obstacles" to="/realsense/obstacles"/>
 		<remap from="/velodyne_clear" to="/realsense/clear"/>
 	</node>
@@ -44,8 +43,8 @@
 	</node>
 		<!-- realsense -->
 	<node pkg="making_local_map" type="ground_and_obstacles_to_grid" name="realsense_localmap">
-		<remap from="/rm_ground" to="/realsense/obstacles"/>
-		<remap from="/ground" to="/realsense/clear"/>
+		<remap from="/rm_ground" to="/realsense/obstacles_"/>
+		<remap from="/ground" to="/realsense/clear_"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/realsense"/>
 	</node>
 		<!-- hokuyo -->
@@ -55,17 +54,16 @@
 	</node>
 
 	<!-- integrate localmap -->
-	<node pkg="making_local_map" type="occupancygrid_integrate" name="occupancygrid_integrate">
+	<node pkg="making_local_map" type="occupancygrid_integrate" name="occupancygrid_integrate" output="screen">
 		<remap from="/occupancygrid/lidar/stored" to="/occupancygrid/velodyne"/>
 		<remap from="/occupancygrid/realsense" to="/occupancygrid/realsense"/>
 		<remap from="/occupancygrid/hokuyo" to="/occupancygrid/hokuyo"/>
 	</node>
 
 	<!-- rviz -->
-	<!-- <node pkg="rviz" type="rviz" name="rviz" args="/home/amsl/rviz/test.rviz"/> -->
+	<node pkg="rviz" type="rviz" name="rviz" args="/home/amsl/rviz/test.rviz"/>
 
 	<!-- rosbag play -->
-
-	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock /home/amsl/bagfiles/realsense_2019&#45;05&#45;16&#45;16&#45;41&#45;13.bag &#45;l" /> -->
-
+	<node pkg="rosbag" type="play" name="play" args="--clock /home/amsl/bagfiles/realsense_2019-05-16-16-41-13.bag -l" />
+	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock /home/amsl/bagfiles/frontcam_2019&#45;05&#45;21.bag &#45;l" /> -->
 </launch>

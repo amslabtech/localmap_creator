@@ -49,58 +49,51 @@ OccupancyGridCombination::OccupancyGridCombination()
 
 void OccupancyGridCombination::CallbackGridLidar(const nav_msgs::OccupancyGridConstPtr& msg)
 {
+	std::cout<<"CallbackGridLidar"<<std::endl;	
 	grid_lidar = *msg;
-	if(grid.data.empty())	grid = *msg;
 
 	if(first_callback_grid_lidar && first_callback_grid_realsense && first_callback_grid_hokuyo){
-		grid_realsense = *msg;
-		for(size_t i=0;i<grid_realsense.data.size();i++)	grid_realsense.data[i] = -1;
+		grid = *msg;
+		for(size_t i=0;i<grid_realsense.data.size();i++)	grid.data[i] = -1;
 	}
-		
 	first_callback_grid_lidar = false;
 
 	time_pub = msg->header.stamp;
-	if(!grid_lidar.data.empty() && !grid_realsense.data.empty() && !grid_hokuyo.data.empty()){
-		CombineGrids();
-	}
+	CombineGrids();
 	if(!grid.data.empty())	Publication();
 }
 
 void OccupancyGridCombination::CallbackGridRealsense(const nav_msgs::OccupancyGridConstPtr& msg)
 {
+	std::cout<<"CallbackGridRealsense"<<std::endl;	
 	grid_realsense = *msg;
-	if(grid.data.empty())	grid = *msg;
 	
 	if(first_callback_grid_lidar && first_callback_grid_realsense && first_callback_grid_hokuyo){
-		grid_lidar = *msg;
-		for(size_t i=0;i<grid_lidar.data.size();i++)	grid_lidar.data[i] = -1;
+		grid = *msg;
+		for(size_t i=0;i<grid_lidar.data.size();i++)	grid.data[i] = -1;
 	}
 
 	first_callback_grid_realsense = false;
 
 	time_pub = msg->header.stamp;
-	if(!grid_lidar.data.empty() && !grid_realsense.data.empty() && !grid_hokuyo.data.empty()){
-		CombineGrids();
-	}
+	CombineGrids();
 	if(!grid.data.empty())	Publication();
 }
 
 void OccupancyGridCombination::CallbackGridHokuyo(const nav_msgs::OccupancyGridConstPtr& msg)
 {
+	std::cout<<"CallbackGridHokuyo"<<std::endl;	
 	grid_hokuyo = *msg;
-	if(grid.data.empty())	grid = *msg;
 
 	if(first_callback_grid_lidar && first_callback_grid_realsense && first_callback_grid_hokuyo){
-		grid_hokuyo = *msg;
-		for(size_t i=0;i<grid_hokuyo.data.size();i++)	grid_hokuyo.data[i] = -1;
+		grid = *msg;
+		for(size_t i=0;i<grid_hokuyo.data.size();i++)	grid.data[i] = -1;
 	}
 		
-	first_callback_grid_lidar = false;
+	first_callback_grid_hokuyo = false;
 	
 	time_pub = msg->header.stamp;
-	if(!grid_lidar.data.empty() && !grid_realsense.data.empty() && !grid_hokuyo.data.empty()){
-		CombineGrids();
-	}
+	CombineGrids();
 	if(!grid.data.empty())	Publication();
 }
 
@@ -109,9 +102,9 @@ void OccupancyGridCombination::CombineGrids(void)
 {
 
 	for(size_t i=0;i<grid.data.size();i++){
-		grid.data[i] = grid_lidar.data[i];
-		if(grid_realsense.data[i]!=-1) grid.data[i] = grid_realsense.data[i];
-		if(grid.data[i]!=100) grid.data[i] = grid_hokuyo.data[i];
+		if(!first_callback_grid_lidar)grid.data[i] = grid_lidar.data[i];
+		if(!first_callback_grid_realsense && grid_realsense.data[i]!=-1) grid.data[i] = grid_realsense.data[i];
+		if(!first_callback_grid_hokuyo && grid.data[i]!=100) grid.data[i] = grid_hokuyo.data[i];
 	}
 }
 
@@ -119,6 +112,7 @@ void OccupancyGridCombination::CombineGrids(void)
 
 void OccupancyGridCombination::Publication(void)
 {
+	std::cout<<"Publication"<<std::endl;	
 	grid.header.stamp = time_pub;
 	pub.publish(grid);
 }

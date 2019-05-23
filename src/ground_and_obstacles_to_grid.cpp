@@ -44,6 +44,10 @@ class OccupancyGridLidar{
 		const double h = 20.0;	//y[m]
 		const double resolution = 0.1;	//[m]
 		// const double range_road_intensity[2] = {5, 15};
+		
+		bool first_callback_ground = true;
+
+
 	public:
 		OccupancyGridLidar();
 		void GridInitialization(void);
@@ -99,7 +103,8 @@ void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr
 	pub_stamp = msg->header.stamp;
 
 	InputGrid();
-	Publication();
+	if(!first_callback_ground)
+		Publication();
 }/*}}}*/
 
 void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &msg)/*{{{*/
@@ -116,6 +121,7 @@ void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &
 	ExtractPCInRange(tmp_pc);
 	
 	pcl::copyPointCloud(*tmp_pc, *ground);
+	first_callback_ground = false;
 }/*}}}*/
 
 void OccupancyGridLidar::ExtractPCInRange(pcl::PointCloud<pcl::PointXYZI>::Ptr pc)/*{{{*/
