@@ -47,7 +47,7 @@ void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 
 		pcl::VoxelGrid<pcl::PointXYZRGB> vg;
     	vg.setInputCloud (pcl_cloud);  
-    	vg.setLeafSize (0.05, 0.05f, 0.05f);
+    	vg.setLeafSize (0.02f, 0.02f, 0.02f);
     	vg.filter (*ds_cloud);
 
     	pcl::toROSMsg(*ds_cloud, pc2_out);
