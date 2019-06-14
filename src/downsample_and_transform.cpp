@@ -46,17 +46,14 @@ void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 	sensor_msgs::PointCloud2 pc2_out;
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud (new pcl::PointCloud<pcl::PointXYZRGB>());
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr ds_cloud {new pcl::PointCloud<pcl::PointXYZRGB>()};
-    ros::Time time = ros::Time(0);
 	try{
-		
-        tflistener.waitForTransform("/base_link", msg->header.frame_id, time, ros::Duration(4.0));
-		pcl_ros::transformPointCloud("/base_link", *msg, pc2_trans, tflistener);
-		pcl::fromROSMsg(pc2_trans, *pcl_cloud);
+		pcl::fromROSMsg(*msg, *pcl_cloud);
 
 		DownsamplingBoxel(pcl_cloud,ds_cloud);
-		// DownsamplingRandom(pcl_cloud,ds_cloud,10);
+		
+		pcl_ros::transformPointCloud("/base_link", *ds_cloud, *pcl_cloud, tflistener);
 
-    	pcl::toROSMsg(*ds_cloud, pc2_out);
+    	pcl::toROSMsg(*pcl_cloud, pc2_out);
 		pc2_out.header.frame_id = "/base_link";
 		pc2_out.header.stamp = msg->header.stamp;
 		pub.publish(pc2_out);
@@ -81,13 +78,18 @@ void PointCloudTransform::DownsamplingRandom(	pcl::PointCloud<pcl::PointXYZRGB>:
 												pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc_,
 												int denominator)
 {
-	int j=0;
-	for(auto i=pc->points.begin();i!=pc->points.end();i++){
-		if(!(j%denominator)){
-			pc_->points.push_back(*i);
-		}
-		j++;
+	// int j=0;
+	// for(auto i=pc->points.begin();i!=pc->points.end();i+=denominator){
+	// 	// if(!(j%denominator)){
+	// 		pc_->points.push_back(*i);
+	// 	// }
+	// 	// j++;
+	// }
+	
+	for(int i=0;i<pc->points.size();i+=denominator){
+		// pc_->points.push_back(pc->points[i]);
 	}
+
 }
 
 int main(int argc, char** argv)
