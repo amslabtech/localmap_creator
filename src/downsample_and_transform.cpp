@@ -11,6 +11,8 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <tf/transform_listener.h>
 
+
+
 class PointCloudTransform{
 	private:
 		ros::NodeHandle nh;
@@ -23,6 +25,11 @@ class PointCloudTransform{
 	public:
 		PointCloudTransform();
 		void Callback(const sensor_msgs::PointCloud2ConstPtr& msg);
+		void DownsamplingBoxel(	pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc,
+								pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc_);
+		void DownsamplingRandom(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc,
+								pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc_, 
+								int denominator);
 };
 
 PointCloudTransform::PointCloudTransform()
@@ -34,6 +41,7 @@ PointCloudTransform::PointCloudTransform()
 
 void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
+	std::cout << "downsamoling" << std::endl;
 	sensor_msgs::PointCloud2 pc2_trans;
 	sensor_msgs::PointCloud2 pc2_out;
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud (new pcl::PointCloud<pcl::PointXYZRGB>());
@@ -45,10 +53,8 @@ void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 		pcl_ros::transformPointCloud("/base_link", *msg, pc2_trans, tflistener);
 		pcl::fromROSMsg(pc2_trans, *pcl_cloud);
 
-		pcl::VoxelGrid<pcl::PointXYZRGB> vg;
-    	vg.setInputCloud (pcl_cloud);  
-    	vg.setLeafSize (0.02f, 0.02f, 0.02f);
-    	vg.filter (*ds_cloud);
+		DownsamplingBoxel(pcl_cloud,ds_cloud);
+		// DownsamplingRandom(pcl_cloud,ds_cloud,10);
 
     	pcl::toROSMsg(*ds_cloud, pc2_out);
 		pc2_out.header.frame_id = "/base_link";
@@ -57,6 +63,30 @@ void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 	}
 	catch(tf::TransformException ex){
 		ROS_ERROR("%s",ex.what());
+	}
+}
+
+
+void PointCloudTransform::DownsamplingBoxel(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc,
+											pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc_)
+{
+	
+	pcl::VoxelGrid<pcl::PointXYZRGB> vg;
+   	vg.setInputCloud (pc);  
+   	vg.setLeafSize (0.02f, 0.02f, 0.02f);
+    vg.filter (*pc_);
+	
+}
+void PointCloudTransform::DownsamplingRandom(	pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc,
+												pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc_,
+												int denominator)
+{
+	int j=0;
+	for(auto i=pc->points.begin();i!=pc->points.end();i++){
+		if(!(j%denominator)){
+			pc_->points.push_back(*i);
+		}
+		j++;
 	}
 }
 
