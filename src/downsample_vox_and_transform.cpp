@@ -62,7 +62,7 @@ void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "downsample_and_transform");
+    ros::init(argc, argv, "downsample_vox_and_transform");
 	PointCloudTransform transform;
 	ros::spin();
 	
