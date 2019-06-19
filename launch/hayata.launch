@@ -8,7 +8,7 @@
     <include file="$(find velodyne_pointcloud)/launch/32e_points.launch" />
 
 	<!-- downsampling realsense points -->
-	<node pkg="making_local_map" type="downsample_and_transform" name="downsample_and_transform" output="screen">
+	<node pkg="making_local_map" type="downsample_and_transform" name="downsample_and_transform">
 		<remap from="/cloud" to="/camera/depth_registered/points"/>
 		<remap from="/cloud/downsamplled" to="/realsense/downsampled"/>
 	</node>
@@ -21,8 +21,7 @@
 		<param name="full_clouds" value="true"/>
 		<param name="grid_dimensions" value="50"/>
 		<param name="height_threshold" value="0.3"/>
-		<!-- <remap from="/velodyne_points" to="/realsense/downsampled"/> -->
-		<remap from="/velodyne_points" to="/camera/depth_registered/points"/>
+		<remap from="/velodyne_points" to="/realsense/downsampled"/>
 		<remap from="/velodyne_obstacles" to="/realsense/obstacles"/>
 		<remap from="/velodyne_clear" to="/realsense/clear"/>
 	</node>
