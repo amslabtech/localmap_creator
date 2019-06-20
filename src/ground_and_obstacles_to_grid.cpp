@@ -43,7 +43,11 @@ class OccupancyGridLidar{
 		const double w = 20.0;	//x[m]
 		const double h = 20.0;	//y[m]
 		const double resolution = 0.1;	//[m]
+		const int grass_score = 50;//
+		const int filter_range = 3;//
+		const double zerocell_ratio = 0.7;//[%]
 		// const double range_road_intensity[2] = {2, 15};
+		const double range_road_intensity[2] = {1, 15};
 		
 		bool first_callback_ground = true;
 
@@ -53,9 +57,13 @@ class OccupancyGridLidar{
 		void GridInitialization(void);
 		void CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr& msg);
 		void CallbackGround(const sensor_msgs::PointCloud2ConstPtr& msg);
+		bool CellIsInside(nav_msgs::OccupancyGrid grid, int x, int y);
 		void ExtractPCInRange(pcl::PointCloud<pcl::PointXYZI>::Ptr pc);
+		void Filter(void);
 		void InputGrid(void);
 		int MeterpointToIndex(double x, double y);
+		void IndexToPoint(nav_msgs::OccupancyGrid grid, int index, int& x, int& y);
+		int PointToIndex(nav_msgs::OccupancyGrid grid, int x, int y);
 		void Publication(void);
 };
 
@@ -137,22 +145,65 @@ void OccupancyGridLidar::ExtractPCInRange(pcl::PointCloud<pcl::PointXYZI>::Ptr p
 	pass.filter(*pc);
 }/*}}}*/
 
+bool OccupancyGridLidar::CellIsInside(nav_msgs::OccupancyGrid grid, int x, int y)
+{   
+	int w = grid.info.width;
+	int h = grid.info.height;
+	if(x<-w/2.0)  return false;
+	if(x>w/2.0-1) return false;
+	if(y<-h/2.0)  return false;
+	if(y>h/2.0-1) return false;
+	return true;
+}
+
+
+
+void OccupancyGridLidar::Filter(void)
+{
+	std::vector<int> indices_obs;
+
+	for(size_t i=0;i<grid.data.size();i++){
+		if(grid.data[i]>0 && grid.data[i]<99){
+			int x, y;
+			IndexToPoint(grid, i, x, y);
+			int count_zerocell = 0; 
+			int count_grasscell = 0; 
+			for(int j=-filter_range;j<=filter_range;j++){
+				for(int k=-filter_range;k<=filter_range;k++){
+					if(CellIsInside(grid, x+j, y+k)){ 
+						if(grid.data[PointToIndex(grid, x+j, y+k)]==0)	
+							count_zerocell++;
+						else if(grid.data[PointToIndex(grid, x+j, y+k)]==grass_score)
+							count_grasscell++;
+					}
+				}
+			}
+			int num_cells = count_zerocell+count_grasscell;
+			double threshold = num_cells*zerocell_ratio;
+			if(count_zerocell>threshold)	grid.data[i] = 0;
+		}
+	}
+}
+
 void OccupancyGridLidar::InputGrid(void)
 {
 	grid = grid_all_minusone;
 	//intensity
 	for(size_t i=0;i<ground->points.size();i++){
-	// 	if(ground->points[i].intensity<range_road_intensity[0] ||
-	// 	   ground->points[i].intensity>range_road_intensity[1]){
-	// 		grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = 50;
-	// 	}else
+		if(ground->points[i].intensity<range_road_intensity[0] ||
+		   ground->points[i].intensity>range_road_intensity[1]){
+			grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = grass_score;
+		}else
 			grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = 0;
 	}
 	//obstacle
 	for(size_t i=0;i<rmground->points.size();i++){
 		grid.data[MeterpointToIndex(rmground->points[i].x, rmground->points[i].y)] = 100;
 	}
+	Filter();
 }
+
+
 
 int OccupancyGridLidar::MeterpointToIndex(double x, double y)
 {
@@ -160,6 +211,20 @@ int OccupancyGridLidar::MeterpointToIndex(double x, double y)
 	int y_ = y/grid.info.resolution + grid.info.height/2.0;
 	int index = y_*grid.info.width + x_;
 	return index;
+}
+
+void OccupancyGridLidar::IndexToPoint(nav_msgs::OccupancyGrid grid, int index, int& x, int& y)
+{
+	x = index%grid.info.width - grid.info.width/2.0;
+	y = index/grid.info.width - grid.info.height/2.0;
+}
+
+
+int OccupancyGridLidar::PointToIndex(nav_msgs::OccupancyGrid grid, int x, int y)
+{
+	int x_ = x + grid.info.width/2.0;
+	int y_ = y + grid.info.height/2.0;
+	return	y_*grid.info.width + x_;
 }
 
 void OccupancyGridLidar::Publication(void)
