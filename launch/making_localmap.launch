@@ -4,7 +4,7 @@
 	<node pkg="making_local_map" type="downsample_and_transform" name="downsample_and_transform"
 		ns="making_localmap">
 		<remap from="/cloud" to="/camera/depth_registered/points"/>
-		<remap from="/cloud/downsamplled" to="/realsense/downsampled"/>
+		<remap from="/cloud/downsampled" to="/realsense/downsampled"/>
 	</node>
 
 	<!-- min_max -->
@@ -13,9 +13,8 @@
 		<param name="cell_size" value="0.1"/>
 		<param name="full_clouds" value="true"/>
 		<param name="grid_dimensions" value="50"/>
-		<param name="height_threshold" value="0.3"/>
-		<!-- <remap from="/velodyne_points" to="/realsense/downsampled"/> -->
-		<remap from="/velodyne_points" to="/camera/depth_registered/points"/>
+		<param name="height_threshold" value="0.20"/>
+		<remap from="/velodyne_points" to="/realsense/downsampled"/>
 		<remap from="/velodyne_obstacles" to="/realsense/obstacles"/>
 		<remap from="/velodyne_clear" to="/realsense/clear"/>
 	</node>
