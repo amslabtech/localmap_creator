@@ -104,7 +104,7 @@ void OccupancyGridCombination::CombineGrids(void)
 	for(size_t i=0;i<grid.data.size();i++){
 		if(!first_callback_grid_lidar)grid.data[i] = grid_lidar.data[i];
 		if(!first_callback_grid_realsense && grid_realsense.data[i]!=-1) grid.data[i] = grid_realsense.data[i];
-		if(!first_callback_grid_hokuyo && grid.data[i]!=100) grid.data[i] = grid_hokuyo.data[i];
+		if(!first_callback_grid_hokuyo && grid.data[i]<=0) grid.data[i] = grid_hokuyo.data[i];
 	}
 }
 

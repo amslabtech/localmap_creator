@@ -70,7 +70,7 @@ void PointCloudTransform::DownsamplingBoxel(pcl::PointCloud<pcl::PointXYZRGB>::P
 	
 	pcl::VoxelGrid<pcl::PointXYZRGB> vg;
    	vg.setInputCloud (pc);  
-   	vg.setLeafSize (0.02f, 0.02f, 0.02f);
+   	vg.setLeafSize (0.02f, 0.02f, 10.0f);
     vg.filter (*pc_);
 	
 }

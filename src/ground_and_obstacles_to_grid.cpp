@@ -43,7 +43,7 @@ class OccupancyGridLidar{
 		const double w = 20.0;	//x[m]
 		const double h = 20.0;	//y[m]
 		const double resolution = 0.1;	//[m]
-		// const double range_road_intensity[2] = {5, 15};
+		// const double range_road_intensity[2] = {2, 15};
 		
 		bool first_callback_ground = true;
 
@@ -142,10 +142,11 @@ void OccupancyGridLidar::InputGrid(void)
 	grid = grid_all_minusone;
 	//intensity
 	for(size_t i=0;i<ground->points.size();i++){
-		// if(ground->points[i].intensity<range_road_intensity[0] || ground->points[i].intensity>range_road_intensity[1])	grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = 50;
-		// else	grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = 0;
-		
-		grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = 0;
+	// 	if(ground->points[i].intensity<range_road_intensity[0] ||
+	// 	   ground->points[i].intensity>range_road_intensity[1]){
+	// 		grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = 50;
+	// 	}else
+			grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = 0;
 	}
 	//obstacle
 	for(size_t i=0;i<rmground->points.size();i++){
