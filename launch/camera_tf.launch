@@ -1,13 +1,5 @@
-
 <launch>
 	<!-- tf -->
-    <node pkg="tf" type="static_transform_publisher" name="baselink2velodyne" 
-          args="-0.22 0.0 1.05 0.0 0.0 0.0 base_link velodyne 100" />
-    <node pkg="tf" type="static_transform_publisher" name="baselink2front_laser" 
-          args="0.0 0.0 0.1 0.0 0.0 3.14159265 base_link front_laser 100" />
-	  
-	<node pkg="tf" type="static_transform_publisher" name="base_link2camera_link" 
-		args="0.04 0 0.75 0 0.7853981633974483 0 /base_link /camera_link 100"/>
     <node pkg="tf" type="static_transform_publisher" name="camera_link2camera_aligned_depth_to_color_frame" 
           args="-0.00022135 0.0148138152435 0.0002108 0.0043222509546489525 -0.0006698774208260594 -0.003102426125164551 camera_link camera_aligned_depth_to_color_frame 100" />
     <node pkg="tf" type="static_transform_publisher" name="camera_aligned_depth_to_color_frame2camera_color_optical_frame" 

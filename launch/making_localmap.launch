@@ -32,6 +32,10 @@
 		<remap from="/rm_ground" to="/velodyne_obstacles"/>
 		<remap from="/ground" to="/velodyne_clear"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/velodyne"/>
+		<param name="ROAD_INTENSITY_MIN" value="1" type="double"/>
+		<param name="ROAD_INTENSITY_MAX" value="15" type="double"/>
+		<param name="ZEROCELL_RATIO" value="0.4" type="double"/>
+		<param name="FILTER_RANGE" value="3" type="int"/>
 	</node>
 		<!-- realsense -->
 	<node pkg="making_local_map" type="ground_and_obstacles_to_grid" name="realsense_localmap" ns="making_localmap">
@@ -50,6 +54,7 @@
 		<remap from="/occupancygrid/lidar/stored" to="/occupancygrid/velodyne"/>
 		<remap from="/occupancygrid/realsense" to="/occupancygrid/realsense"/>
 		<remap from="/occupancygrid/hokuyo" to="/occupancygrid/hokuyo"/>
+		<param name="EXPAND_RANGE" value="3" type="int"/>
 	</node>
 
 </launch>

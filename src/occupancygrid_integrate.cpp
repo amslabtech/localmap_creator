@@ -70,7 +70,8 @@ void OccupancyGridCombination::CallbackGridLidar(const nav_msgs::OccupancyGridCo
 	if(first_callback_grid_lidar && first_callback_grid_realsense && first_callback_grid_hokuyo){
 		grid = *msg;
 		grid_expand =*msg;
-		for(size_t i=0;i<grid_realsense.data.size();i++)	grid.data[i] = -1;
+		size_t loop_lim = grid_realsense.data.size();
+		for(size_t i=0;i<loop_lim;i++)	grid.data[i] = -1;
 	}
 	first_callback_grid_lidar = false;
 
@@ -87,7 +88,8 @@ void OccupancyGridCombination::CallbackGridRealsense(const nav_msgs::OccupancyGr
 	if(first_callback_grid_lidar && first_callback_grid_realsense && first_callback_grid_hokuyo){
 		grid = *msg;
 		grid_expand =*msg;
-		for(size_t i=0;i<grid_lidar.data.size();i++)	grid.data[i] = -1;
+		size_t loop_lim = grid_lidar.data.size();
+		for(size_t i=0;i<loop_lim;i++)	grid.data[i] = -1;
 	}
 
 	first_callback_grid_realsense = false;
@@ -105,7 +107,8 @@ void OccupancyGridCombination::CallbackGridHokuyo(const nav_msgs::OccupancyGridC
 	if(first_callback_grid_lidar && first_callback_grid_realsense && first_callback_grid_hokuyo){
 		grid = *msg;
 		grid_expand =*msg;
-		for(size_t i=0;i<grid_hokuyo.data.size();i++)	grid.data[i] = -1;
+		size_t loop_lim = grid_hokuyo.data.size();
+		for(size_t i=0;i<loop_lim;i++)	grid.data[i] = -1;
 	}
 		
 	first_callback_grid_hokuyo = false;
@@ -135,13 +138,14 @@ void OccupancyGridCombination::Expand(void)
 
 void OccupancyGridCombination::CombineGrids(void)
 {
-	for(size_t i=0;i<grid.data.size();i++){
+	size_t loop_lim = grid.data.size();
+	for(size_t i=0;i<loop_lim;i++){
 		if(!first_callback_grid_lidar)grid.data[i] = grid_lidar.data[i];
 		if(!first_callback_grid_realsense && grid_realsense.data[i]!=-1) grid.data[i] = grid_realsense.data[i];
 		if(!first_callback_grid_hokuyo && grid.data[i]<=0) grid.data[i] = grid_hokuyo.data[i];
 	}
 	
-	for(size_t i=0;i<grid.data.size();i++){
+	for(size_t i=0;i<loop_lim;i++){
 		grid_expand.data[i] = grid.data[i];
 	}
 	Expand();

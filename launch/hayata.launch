@@ -2,7 +2,8 @@
 <launch>
     <param name="use_sim_time" value="true"/>
 	<!-- tf -->
-    <include file="$(find making_local_map)/launch/tf.launch" />
+    <include file="$(find cats)/launch/robot_state.launch" />
+    <include file="$(find making_local_map)/launch/camera_tf.launch" />
 
 	<!-- velodyne -->
     <include file="$(find velodyne_pointcloud)/launch/32e_points.launch" />
@@ -17,10 +18,10 @@
     <include file="$(find velodyne_height_map)/launch/amsl_velodyne_heightmap.launch" />
 	<node pkg="nodelet" type="nodelet" name="heightmap_realsense"
         args="load velodyne_height_map/HeightMapNodelet velodyne_nodelet_manager">
-		<param name="cell_size" value="0.1"/>
+		<param name="cell_size" value="0.2"/>
 		<param name="full_clouds" value="true"/>
-		<param name="grid_dimensions" value="50"/>
-		<param name="height_threshold" value="0.1"/>
+		<param name="grid_dimensions" value="25"/>
+		<param name="height_threshold" value="0.2"/>
 		<remap from="/velodyne_points" to="/realsense/downsampled"/>
 		<remap from="/velodyne_obstacles" to="/realsense/obstacles"/>
 		<remap from="/velodyne_clear" to="/realsense/clear"/>
@@ -35,10 +36,14 @@
 
 	<!-- make each occupancygrid -->
 		<!-- velodyne -->
-	<node pkg="making_local_map" type="ground_and_obstacles_to_grid" name="velodyne_localmap">
+	<node pkg="making_local_map" type="ground_and_obstacles_to_grid" name="velodyne_localmap" >
 		<remap from="/rm_ground" to="/velodyne_obstacles"/>
 		<remap from="/ground" to="/velodyne_clear"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/velodyne"/>
+		<param name="ROAD_INTENSITY_MIN" value="1" type="double"/>
+		<param name="ROAD_INTENSITY_MAX" value="15" type="double"/>
+		<param name="ZEROCELL_RATIO" value="0.4" type="double"/>
+		<param name="FILTER_RANGE" value="3" type="int"/>
 	</node>
 		<!-- realsense -->
 	<node pkg="making_local_map" type="ground_and_obstacles_to_grid" name="realsense_localmap">
@@ -53,16 +58,18 @@
 	</node>
 
 	<!-- integrate localmap -->
-	<node pkg="making_local_map" type="occupancygrid_integrate" name="occupancygrid_integrate">
+	<node pkg="making_local_map" type="occupancygrid_integrate" name="occupancygrid_integrate" output="screen">
 		<remap from="/occupancygrid/lidar/stored" to="/occupancygrid/velodyne"/>
 		<remap from="/occupancygrid/realsense" to="/occupancygrid/realsense"/>
 		<remap from="/occupancygrid/hokuyo" to="/occupancygrid/hokuyo"/>
+		<param name="EXPAND_RANGE" value="3" type="int"/>
 	</node>
 
 	<!-- rviz -->
 	<node pkg="rviz" type="rviz" name="rviz" args="/home/amsl/rviz/test.rviz"/>
 
 	<!-- rosbag play -->
-	<node pkg="rosbag" type="play" name="play" args="--clock /home/amsl/bagfiles/realsense_2019-05-16-16-41-13.bag -l" />
-	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock /home/amsl/bagfiles/frontcam_2019&#45;05&#45;21.bag &#45;l" /> -->
+	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock /home/amsl/bagfiles/realsense_2019&#45;05&#45;16&#45;16&#45;41&#45;13.bag &#45;l" /> -->
+	<node pkg="rosbag" type="play" name="play" args="--clock /home/amsl/bagfiles/2018-09-15-16-11-46.bag -s 300 -l" />
+	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock /home/amsl/bagfiles/2018&#45;06&#45;30&#45;15&#45;29&#45;21.bag &#45;s 150 &#45;l" /> -->
 </launch>
