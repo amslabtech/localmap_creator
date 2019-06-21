@@ -17,6 +17,7 @@
 class OccupancyGridLidar{
 	private:
 		ros::NodeHandle nh;
+		ros::NodeHandle private_nh;
 		
 		/*subscribe*/
 		ros::Subscriber sub_rmground;
@@ -44,10 +45,13 @@ class OccupancyGridLidar{
 		const double h = 20.0;	//y[m]
 		const double resolution = 0.1;	//[m]
 		const int grass_score = 50;//
-		const int filter_range = 3;//
-		const double zerocell_ratio = 0.7;//[%]
-		// const double range_road_intensity[2] = {2, 15};
-		const double range_road_intensity[2] = {1, 15};
+		
+		
+		double ROAD_INTENSITY_MIN;
+		double ROAD_INTENSITY_MAX;
+		double ZEROCELL_RATIO;
+		int FILTER_RANGE;
+		double range_road_intensity[2] = {ROAD_INTENSITY_MIN, ROAD_INTENSITY_MAX};
 		
 		bool first_callback_ground = true;
 
@@ -69,11 +73,26 @@ class OccupancyGridLidar{
 
 
 OccupancyGridLidar::OccupancyGridLidar()
+	: private_nh("~")
 {
+	private_nh.param("ROAD_INTENSITY_MIN", ROAD_INTENSITY_MIN, {1});
+	private_nh.param("ROAD_INTENSITY_MAX", ROAD_INTENSITY_MAX, {15});
+	private_nh.param("FILTER_RANGE", FILTER_RANGE, {3});
+	private_nh.param("ZEROCELL_RATIO", ZEROCELL_RATIO, {0.4});
+
+	std::cout << "ROAD_INTENSITY_MIN : " << ROAD_INTENSITY_MIN << std::endl;
+	std::cout << "ROAD_INTENSITY_MAX : " << ROAD_INTENSITY_MAX << std::endl;
+	std::cout << "FILTER_RANGE       : " << FILTER_RANGE << std::endl;
+	std::cout << "ZEROCELL_RATIO     : " << ZEROCELL_RATIO << std::endl;
+
 	sub_rmground = nh.subscribe("/rm_ground", 1, &OccupancyGridLidar::CallbackRmGround, this);
 	sub_ground = nh.subscribe("/ground", 1, &OccupancyGridLidar::CallbackGround, this);
 	pub = nh.advertise<nav_msgs::OccupancyGrid>("/occupancygrid/lidar", 1);
+	range_road_intensity[0] = ROAD_INTENSITY_MIN;
+	range_road_intensity[1] = ROAD_INTENSITY_MAX;
 	GridInitialization();
+
+	
 }
 
 void OccupancyGridLidar::GridInitialization(void)/*{{{*/
@@ -160,16 +179,15 @@ bool OccupancyGridLidar::CellIsInside(nav_msgs::OccupancyGrid grid, int x, int y
 
 void OccupancyGridLidar::Filter(void)
 {
-	std::vector<int> indices_obs;
-
-	for(size_t i=0;i<grid.data.size();i++){
-		if(grid.data[i]>0 && grid.data[i]<99){
+	int loop_lim = grid.data.size();
+	for(size_t i=0;i<loop_lim;i++){
+		if(grid.data[i]==grass_score){
 			int x, y;
 			IndexToPoint(grid, i, x, y);
 			int count_zerocell = 0; 
 			int count_grasscell = 0; 
-			for(int j=-filter_range;j<=filter_range;j++){
-				for(int k=-filter_range;k<=filter_range;k++){
+			for(int j=-FILTER_RANGE;j<=FILTER_RANGE;j++){
+				for(int k=-FILTER_RANGE;k<=FILTER_RANGE;k++){
 					if(CellIsInside(grid, x+j, y+k)){ 
 						if(grid.data[PointToIndex(grid, x+j, y+k)]==0)	
 							count_zerocell++;
@@ -179,8 +197,8 @@ void OccupancyGridLidar::Filter(void)
 				}
 			}
 			int num_cells = count_zerocell+count_grasscell;
-			double threshold = num_cells*zerocell_ratio;
-			if(count_zerocell>threshold)	grid.data[i] = 0;
+			double threshold = num_cells*ZEROCELL_RATIO;
+			if(count_zerocell>=threshold)	grid.data[i] = 0;
 		}
 	}
 }
