@@ -46,7 +46,7 @@
 		<param name="FILTER_RANGE" value="3" type="int"/>
 	</node>
 		<!-- realsense -->
-	<node pkg="making_local_map" type="ground_and_obstacles_to_grid" name="realsense_localmap">
+	<node pkg="making_local_map" type="realsense_to_grid" name="realsense_localmap">
 		<remap from="/rm_ground" to="/realsense/obstacles"/>
 		<remap from="/ground" to="/realsense/clear"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/realsense"/>
@@ -69,7 +69,7 @@
 	<node pkg="rviz" type="rviz" name="rviz" args="/home/amsl/rviz/test.rviz"/>
 
 	<!-- rosbag play -->
-	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock /home/amsl/bagfiles/realsense_2019&#45;05&#45;16&#45;16&#45;41&#45;13.bag &#45;l" /> -->
-	<node pkg="rosbag" type="play" name="play" args="--clock /home/amsl/bagfiles/2018-09-15-16-11-46.bag -s 300 -l" />
+	<node pkg="rosbag" type="play" name="play" args="--clock /home/amsl/bagfiles/realsense_2019-05-16-16-41-13.bag -l" />
+	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock /home/amsl/bagfiles/2018&#45;09&#45;15&#45;16&#45;11&#45;46.bag &#45;s 300 &#45;l" /> -->
 	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock /home/amsl/bagfiles/2018&#45;06&#45;30&#45;15&#45;29&#45;21.bag &#45;s 150 &#45;l" /> -->
 </launch>

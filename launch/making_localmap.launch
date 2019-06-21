@@ -38,7 +38,7 @@
 		<param name="FILTER_RANGE" value="3" type="int"/>
 	</node>
 		<!-- realsense -->
-	<node pkg="making_local_map" type="ground_and_obstacles_to_grid" name="realsense_localmap" ns="making_localmap">
+	<node pkg="making_local_map" type="realsense_to_grid" name="realsense_localmap" ns="making_localmap">
 		<remap from="/rm_ground" to="/realsense/obstacles"/>
 		<remap from="/ground" to="/realsense/clear"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/realsense"/>
