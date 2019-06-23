@@ -27,6 +27,10 @@
 		<remap from="/velodyne_clear" to="/realsense/clear"/>
 	</node>
 
+	<node pkg="making_local_map" type="realsense_curvature" name="realsense_curvature">
+		<remap from="/cloud" to="/realsense/downsampled"/>
+	</node>
+
 	<!-- hokuyo -->
 	<node pkg="making_local_map" type="scan2pcl" name="scan2pcl" output="screen">
 		<remap from="/scan" to="/front_lasr/scan"/>
@@ -58,7 +62,7 @@
 	</node>
 
 	<!-- integrate localmap -->
-	<node pkg="making_local_map" type="occupancygrid_integrate" name="occupancygrid_integrate" output="screen">
+	<node pkg="making_local_map" type="occupancygrid_integrate" name="occupancygrid_integrate">
 		<remap from="/occupancygrid/lidar/stored" to="/occupancygrid/velodyne"/>
 		<remap from="/occupancygrid/realsense" to="/occupancygrid/realsense"/>
 		<remap from="/occupancygrid/hokuyo" to="/occupancygrid/hokuyo"/>

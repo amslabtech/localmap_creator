@@ -27,9 +27,6 @@ class PointCloudTransform{
 		void Callback(const sensor_msgs::PointCloud2ConstPtr& msg);
 		void DownsamplingBoxel(	pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc,
 								pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc_);
-		void DownsamplingRandom(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc,
-								pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc_, 
-								int denominator);
 };
 
 PointCloudTransform::PointCloudTransform()
@@ -70,26 +67,9 @@ void PointCloudTransform::DownsamplingBoxel(pcl::PointCloud<pcl::PointXYZRGB>::P
 	
 	pcl::VoxelGrid<pcl::PointXYZRGB> vg;
    	vg.setInputCloud (pc);  
-   	vg.setLeafSize (0.02f, 0.02f, 10.0f);
+   	vg.setLeafSize (0.1f, 0.1f, 10.0f);
     vg.filter (*pc_);
 	
-}
-void PointCloudTransform::DownsamplingRandom(	pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc,
-												pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc_,
-												int denominator)
-{
-	// int j=0;
-	// for(auto i=pc->points.begin();i!=pc->points.end();i+=denominator){
-	// 	// if(!(j%denominator)){
-	// 		pc_->points.push_back(*i);
-	// 	// }
-	// 	// j++;
-	// }
-	
-	for(int i=0;i<pc->points.size();i+=denominator){
-		// pc_->points.push_back(pc->points[i]);
-	}
-
 }
 
 int main(int argc, char** argv)
