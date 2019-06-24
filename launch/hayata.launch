@@ -48,7 +48,6 @@
 		<param name="ROAD_INTENSITY_MAX" value="15" type="double"/>
 		<param name="ZEROCELL_RATIO" value="0.6" type="double"/>
 		<param name="FILTER_RANGE" value="4" type="int"/>
-		<param name="FILTER_RANGE_MINI" value="1" type="int"/>
 	</node>
 		<!-- realsense -->
 	<!-- <node pkg="making_local_map" type="realsense_to_grid" name="realsense_localmap"> -->
@@ -68,6 +67,7 @@
 		<remap from="/occupancygrid/realsense" to="/occupancygrid/realsense"/>
 		<remap from="/occupancygrid/hokuyo" to="/occupancygrid/hokuyo"/>
 		<param name="EXPAND_RANGE" value="3" type="int"/>
+		<param name="EXPAND_RANGE_MINI" value="1" type="int"/>
 	</node>
 
 	<!-- rviz -->
