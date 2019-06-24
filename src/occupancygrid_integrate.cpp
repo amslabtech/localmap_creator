@@ -2,6 +2,7 @@
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Int16MultiArray.h>
+#include <std_msgs/Bool.h>
 
 class OccupancyGridCombination{
 	private:
@@ -11,6 +12,7 @@ class OccupancyGridCombination{
 		ros::Subscriber sub_grid_lidar;
 		ros::Subscriber sub_grid_realsense;
 		ros::Subscriber sub_grid_hokuyo;
+		ros::Subscriber sub_expand_flag;
 		/*publish*/
 		ros::Publisher pub;
 		ros::Publisher pub_expand;
@@ -24,15 +26,19 @@ class OccupancyGridCombination{
 		bool first_callback_grid_lidar = true;
 		bool first_callback_grid_realsense = true;
 		bool first_callback_grid_hokuyo = true;
+		bool expand_minimize_flag = false;
 		/*time*/
 		ros::Time time_odom_now;
 		ros::Time time_odom_last;
 		ros::Time time_pub;
 		/*param*/
 		int EXPAND_RANGE;
+		int EXPAND_RANGE_MINI;
+		int expand_range;
 
 	public:
 		OccupancyGridCombination();
+		void CallbackExpandFlag(const std_msgs::BoolConstPtr& msg);
 		void CallbackGridLidar(const nav_msgs::OccupancyGridConstPtr& msg);
 		void CallbackGridRealsense(const nav_msgs::OccupancyGridConstPtr& msg);
 		void CallbackGridHokuyo(const nav_msgs::OccupancyGridConstPtr& msg);
@@ -48,7 +54,11 @@ OccupancyGridCombination::OccupancyGridCombination()
 	: private_nh("~")
 {
 	private_nh.param("EXPAND_RANGE", EXPAND_RANGE, {4});
-	std::cout << "EXPAND_RANGE : " << EXPAND_RANGE << std::endl;
+	private_nh.param("EXPAND_RANGE_MINI", EXPAND_RANGE_MINI, {2});
+	std::cout << "EXPAND_RANGE 		: " << EXPAND_RANGE << std::endl;
+	std::cout << "EXPAND_RANGE_MINI : " << EXPAND_RANGE_MINI << std::endl;
+
+	expand_range = EXPAND_RANGE;
 
 
 	sub_grid_lidar = nh.subscribe("/occupancygrid/lidar/stored", 1, 
@@ -57,9 +67,19 @@ OccupancyGridCombination::OccupancyGridCombination()
 			&OccupancyGridCombination::CallbackGridRealsense, this);
 	sub_grid_hokuyo = nh.subscribe("/occupancygrid/hokuyo", 1, 
 			&OccupancyGridCombination::CallbackGridHokuyo, this);
+	sub_expand_flag = nh.subscribe("/expand_minimize_flag", 1, 
+			&OccupancyGridCombination::CallbackExpandFlag, this);
 	
 	pub = nh.advertise<nav_msgs::OccupancyGrid>("/local_map",1);
 	pub_expand = nh.advertise<nav_msgs::OccupancyGrid>("/local_map/expand",1);
+}
+
+void OccupancyGridCombination::CallbackExpandFlag(const std_msgs::BoolConstPtr& msg)
+{
+	expand_minimize_flag = msg->data;
+	std::cout << "ExpandFlag : " << expand_minimize_flag << std::endl;	
+	expand_range = EXPAND_RANGE;
+	if(expand_minimize_flag)expand_range = EXPAND_RANGE_MINI; 
 }
 
 void OccupancyGridCombination::CallbackGridLidar(const nav_msgs::OccupancyGridConstPtr& msg)
@@ -125,8 +145,8 @@ void OccupancyGridCombination::Expand(void)
 		if(grid.data[i]==100){
 			int x, y;
 			IndexToPoint(grid, i, x, y);
-			for(int j=-EXPAND_RANGE;j<=EXPAND_RANGE;j++){
-				for(int k=-EXPAND_RANGE;k<=EXPAND_RANGE;k++){
+			for(int j=-expand_range;j<=expand_range;j++){
+				for(int k=-expand_range;k<=expand_range;k++){
 					if(CellIsInside(grid, x+j, y+k)){ 
 						grid_expand.data[PointToIndex(grid, x+j,y+k)] = 100;
 					}

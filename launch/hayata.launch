@@ -44,17 +44,18 @@
 		<remap from="/rm_ground" to="/velodyne_obstacles"/>
 		<remap from="/ground" to="/velodyne_clear"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/velodyne"/>
-		<param name="ROAD_INTENSITY_MIN" value="1" type="double"/>
+		<param name="ROAD_INTENSITY_MIN" value="4" type="double"/>
 		<param name="ROAD_INTENSITY_MAX" value="15" type="double"/>
-		<param name="ZEROCELL_RATIO" value="0.4" type="double"/>
-		<param name="FILTER_RANGE" value="3" type="int"/>
+		<param name="ZEROCELL_RATIO" value="0.6" type="double"/>
+		<param name="FILTER_RANGE" value="4" type="int"/>
+		<param name="FILTER_RANGE_MINI" value="1" type="int"/>
 	</node>
 		<!-- realsense -->
-	<node pkg="making_local_map" type="realsense_to_grid" name="realsense_localmap">
-		<remap from="/rm_ground" to="/realsense/obstacles"/>
-		<remap from="/ground" to="/realsense/clear"/>
-		<remap from="/occupancygrid/lidar" to="/occupancygrid/realsense"/>
-	</node>
+	<!-- <node pkg="making_local_map" type="realsense_to_grid" name="realsense_localmap"> -->
+	<!-- 	<remap from="/rm_ground" to="/realsense/obstacles"/> -->
+	<!-- 	<remap from="/ground" to="/realsense/clear"/> -->
+	<!-- 	<remap from="/occupancygrid/lidar" to="/occupancygrid/realsense"/> -->
+	<!-- </node> -->
 		<!-- hokuyo -->
 	<node pkg="making_local_map" type="hokuyo_raycast" name="hokuyo_localmap">
 		<remap from="/hokuyo_points" to="/hokuyo_obstacles"/>
@@ -73,7 +74,7 @@
 	<node pkg="rviz" type="rviz" name="rviz" args="/home/amsl/rviz/test.rviz"/>
 
 	<!-- rosbag play -->
-	<node pkg="rosbag" type="play" name="play" args="--clock /home/amsl/bagfiles/realsense_2019-05-16-16-41-13.bag -l" />
-	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock /home/amsl/bagfiles/2018&#45;09&#45;15&#45;16&#45;11&#45;46.bag &#45;s 300 &#45;l" /> -->
+	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock /home/amsl/bagfiles/realsense_2019&#45;05&#45;16&#45;16&#45;41&#45;13.bag &#45;l" /> -->
+	<node pkg="rosbag" type="play" name="play" args="--clock /home/amsl/bagfiles/2018-09-15-16-11-46.bag -s 250 -l" />
 	<!-- <node pkg="rosbag" type="play" name="play" args="&#45;&#45;clock /home/amsl/bagfiles/2018&#45;06&#45;30&#45;15&#45;29&#45;21.bag &#45;s 150 &#45;l" /> -->
 </launch>
