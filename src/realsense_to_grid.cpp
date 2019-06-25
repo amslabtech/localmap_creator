@@ -80,7 +80,8 @@ void OccupancyGridLidar::GridInitialization(void)/*{{{*/
 	grid.info.origin.orientation.y = 0.0;
 	grid.info.origin.orientation.z = 0.0;
 	grid.info.origin.orientation.w = 1.0;
-	for(int i=0;i<grid.info.width*grid.info.height;i++)	grid.data.push_back(-1);
+	int loop_lim = grid.info.width*grid.info.height;
+	for(int i=0;i<loop_lim;i++)	grid.data.push_back(-1);
 	// frame_id is same as the one of subscribed pc
 	grid_all_minusone = grid;
 }/*}}}*/
@@ -141,14 +142,17 @@ void OccupancyGridLidar::InputGrid(void)
 {
 	grid = grid_all_minusone;
 	//intensity
-	for(size_t i=0;i<ground->points.size();i++){
+	size_t loop_lim = ground->points.size();
+	for(size_t i=0;i<loop_lim;i++){
 	// 	if(ground->points[i].intensity<range_road_intensity[0] ||
 	// 	   ground->points[i].intensity>range_road_intensity[1]){
 	// 		grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = 50;
 	// 	}else
 			grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = 0;
 	}
+	
 	//obstacle
+	loop_lim = rmground->points.size();
 	for(size_t i=0;i<rmground->points.size();i++){
 		grid.data[MeterpointToIndex(rmground->points[i].x, rmground->points[i].y)] = 100;
 	}
@@ -171,8 +175,8 @@ void OccupancyGridLidar::Publication(void)
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "ground_and_obstacle_to_grid");
-	std::cout << "= ground_and_obstacle_to_grid =" << std::endl;
+    ros::init(argc, argv, "realsense_to_grid");
+	std::cout << "= realsense_to_grid =" << std::endl;
 	
 	OccupancyGridLidar occupancygrid_lidar;
 

@@ -6,18 +6,12 @@
 		<remap from="/cloud" to="/camera/depth_registered/points"/>
 		<remap from="/cloud/downsampled" to="/realsense/downsampled"/>
 	</node>
-
-	<!-- min_max -->
-	<node pkg="nodelet" type="nodelet" name="heightmap_realsense"
-        args="load velodyne_height_map/HeightMapNodelet velodyne_nodelet_manager" ns="making_localmap">
-		<param name="cell_size" value="0.1"/>
-		<param name="full_clouds" value="true"/>
-		<param name="grid_dimensions" value="50"/>
-		<param name="height_threshold" value="0.20"/>
-		<remap from="/velodyne_points" to="/realsense/downsampled"/>
-		<remap from="/velodyne_obstacles" to="/realsense/obstacles"/>
-		<remap from="/velodyne_clear" to="/realsense/clear"/>
+	<node pkg="making_local_map" type="realsense_object" name="realsense_obstacle">
+		<remap from="/cloud" to="/realsense/downsampled"/>
+		<remap from="/cloud/curv" to="/realsense/obstacles"/>
+		<remap from="/cloud/plane" to="/realsense/clear"/>
 	</node>
+
 
 	<!-- hokuyo -->
 	<node pkg="making_local_map" type="scan2pcl" name="scan2pcl" output="screen" ns="making_localmap">
