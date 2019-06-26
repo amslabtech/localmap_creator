@@ -34,7 +34,7 @@ class OccupancyGridLidar{
 		void GridInitialization(void);
 		void CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr& msg);
 		void CallbackGround(const sensor_msgs::PointCloud2ConstPtr& msg);
-		void ExtractPCInRange(pcl::PointCloud<pcl::PointXYZI>::Ptr pc);
+		void ExtractPCInRange(pcl::PointCloud<pcl::PointXYZI>::Ptr& pc);
 		void InputGrid(void);
 		int MeterpointToIndex(double x, double y);
 		void Publication(void);
@@ -53,14 +53,15 @@ void OccupancyGridLidar::GridInitialization(void)/*{{{*/
 	grid.info.resolution = resolution;
 	grid.info.width = w/resolution + 1;
 	grid.info.height = h/resolution + 1;
-	grid.info.origin.position.x = -w/2.0;
-	grid.info.origin.position.y = -h/2.0;
+	grid.info.origin.position.x = -w*0.5;
+	grid.info.origin.position.y = -h*0.5;
 	grid.info.origin.position.z = 0.0;
 	grid.info.origin.orientation.x = 0.0;
 	grid.info.origin.orientation.y = 0.0;
 	grid.info.origin.orientation.z = 0.0;
 	grid.info.origin.orientation.w = 1.0;
-	for(int i=0;i<grid.info.width*grid.info.height;i++)	grid.data.push_back(0);
+	int loop_lim = grid.info.width*grid.info.height;
+	for(int i=0;i<loop_lim;i++)	grid.data.push_back(0);
 	// frame_id is same as the one of subscribed pc
 	grid_all_zero = grid;
 }/*}}}*/
@@ -78,16 +79,16 @@ void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr
 	Publication();
 }/*}}}*/
 
-void OccupancyGridLidar::ExtractPCInRange(pcl::PointCloud<pcl::PointXYZI>::Ptr pc)/*{{{*/
+void OccupancyGridLidar::ExtractPCInRange(pcl::PointCloud<pcl::PointXYZI>::Ptr& pc)/*{{{*/
 {
 	pcl::PassThrough<pcl::PointXYZI> pass;
 	pass.setInputCloud(pc);
 	pass.setFilterFieldName("x");
-	pass.setFilterLimits(-w/2.0, w/2.0);
+	pass.setFilterLimits(-w*0.5, w*0.5);
 	pass.filter(*pc);
 	pass.setInputCloud(pc);
 	pass.setFilterFieldName("y");
-	pass.setFilterLimits(-h/2.0, h/2.0);
+	pass.setFilterLimits(-h*0.5, h*0.5);
 	pass.filter(*pc);
 }/*}}}*/
 
@@ -95,15 +96,16 @@ void OccupancyGridLidar::InputGrid(void)
 {
 	grid = grid_all_zero;
 	//obstacle
-	for(size_t i=0;i<rmground->points.size();i++){
+	size_t loop_lim = rmground->points.size();
+	for(size_t i=0;i<loop_lim;i++){
 		grid.data[MeterpointToIndex(rmground->points[i].x, rmground->points[i].y)] = 100;
 	}
 }
 
 int OccupancyGridLidar::MeterpointToIndex(double x, double y)
 {
-	int x_ = x/grid.info.resolution + grid.info.width/2.0;
-	int y_ = y/grid.info.resolution + grid.info.height/2.0;
+	int x_ = x/grid.info.resolution + grid.info.width*0.5;
+	int y_ = y/grid.info.resolution + grid.info.height*0.5;
 	int index = y_*grid.info.width + x_;
 	return index;
 }

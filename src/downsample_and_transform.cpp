@@ -25,8 +25,8 @@ class PointCloudTransform{
 	public:
 		PointCloudTransform();
 		void Callback(const sensor_msgs::PointCloud2ConstPtr& msg);
-		void DownsamplingBoxel(	pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc,
-								pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc_);
+		void DownsamplingBoxel(	pcl::PointCloud<pcl::PointXYZRGB>::Ptr& pc,
+								pcl::PointCloud<pcl::PointXYZRGB>::Ptr& pc_);
 };
 
 PointCloudTransform::PointCloudTransform()
@@ -61,8 +61,8 @@ void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 }
 
 
-void PointCloudTransform::DownsamplingBoxel(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc,
-											pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc_)
+void PointCloudTransform::DownsamplingBoxel(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& pc,
+											pcl::PointCloud<pcl::PointXYZRGB>::Ptr& pc_)
 {
 	
 	pcl::VoxelGrid<pcl::PointXYZRGB> vg;
