@@ -17,6 +17,7 @@
 class PointCloudTransform{
 	private:
 		ros::NodeHandle nh;
+		ros::NodeHandle private_nh;
 		ros::Subscriber sub;
 		ros::Publisher pub_curv;
 		ros::Publisher pub_plane;
@@ -29,6 +30,15 @@ class PointCloudTransform{
 		pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr plane_cloud {new pcl::PointCloud<pcl::PointXYZRGBNormal>()};
 		pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_cpy {new pcl::PointCloud<pcl::PointXYZRGBNormal>()};
 
+		double UPPER_LIMIT;
+		double UNDER_LIMIT;
+		double VIEW_RANGE_X_MIN;
+		double VIEW_RANGE_X_MAX;
+		double VIEW_RANGE_Y_MIN;
+		double VIEW_RANGE_Y_MAX;
+		double VIEW_RANGE_Z_MIN;
+		double VIEW_RANGE_Z_MAX;
+
 	public:
 		PointCloudTransform();
 		void Callback(const sensor_msgs::PointCloud2ConstPtr &msg);
@@ -37,7 +47,27 @@ class PointCloudTransform{
 };
 
 PointCloudTransform::PointCloudTransform()
+	: private_nh("~")
 {
+	private_nh.param("UPPER_LIMIT", UPPER_LIMIT, {0.1});
+	private_nh.param("UNDER_LIMIT", UNDER_LIMIT, {0.1});
+	private_nh.param("VIEW_RANGE_X_MIN", VIEW_RANGE_X_MIN, {0.3});
+	private_nh.param("VIEW_RANGE_X_MAX", VIEW_RANGE_X_MAX, {1.0});
+	private_nh.param("VIEW_RANGE_Y_MIN", VIEW_RANGE_Y_MIN, {-0.8});
+	private_nh.param("VIEW_RANGE_Y_MAX", VIEW_RANGE_Y_MAX, {0.8});
+	private_nh.param("VIEW_RANGE_Z_MIN", VIEW_RANGE_Z_MIN, {-0.5});
+	private_nh.param("VIEW_RANGE_Z_MAX", VIEW_RANGE_Z_MAX, {0.5});
+
+	std::cout << "UPPER_LIMIT 		: " << UPPER_LIMIT << std::endl;
+	std::cout << "UNDER_LIMIT 		: " << UNDER_LIMIT << std::endl;
+	std::cout << "VIEW_RANGE_X_MIN 	: " << VIEW_RANGE_X_MIN << std::endl;
+	std::cout << "VIEW_RANGE_X_MAX 	: " << VIEW_RANGE_X_MAX << std::endl;
+	std::cout << "VIEW_RANGE_Y_MIN 	: " << VIEW_RANGE_Y_MIN << std::endl;
+	std::cout << "VIEW_RANGE_Y_MAX 	: " << VIEW_RANGE_Y_MAX << std::endl;
+	std::cout << "VIEW_RANGE_Z_MIN 	: " << VIEW_RANGE_Z_MIN << std::endl;
+	std::cout << "VIEW_RANGE_Z_MAX 	: " << VIEW_RANGE_Z_MAX << std::endl;
+
+
 	sub = nh.subscribe("/cloud", 1, &PointCloudTransform::Callback, this);
 	pub_curv = nh.advertise<sensor_msgs::PointCloud2>("/cloud/curv", 1);
 	pub_plane = nh.advertise<sensor_msgs::PointCloud2>("/cloud/plane", 1);
@@ -67,44 +97,23 @@ void PointCloudTransform::Passthrough(void)
 	pcl::PassThrough<pcl::PointXYZRGBNormal> pass;
 	pass.setInputCloud(cloud_cpy);
 	pass.setFilterFieldName("x");
-	pass.setFilterLimits(0.3, 1.2);
+	pass.setFilterLimits(VIEW_RANGE_X_MIN, VIEW_RANGE_X_MAX);
 	pass.filter(*cloud_cpy);
 	pass.setInputCloud(cloud_cpy);
 	pass.setFilterFieldName("y");
-	pass.setFilterLimits(-0.8, 0.8);
+	pass.setFilterLimits(VIEW_RANGE_Y_MIN, VIEW_RANGE_Y_MAX);
 	pass.filter(*cloud_cpy);
 	pass.setFilterFieldName("z");
-	pass.setFilterLimits(-0.5, 0.5);
+	pass.setFilterLimits(VIEW_RANGE_Z_MIN, VIEW_RANGE_Z_MIN);
 	pass.filter(*cloud_cpy);
 
-	pass.setFilterLimits(-0.10, 0.10);
+	pass.setFilterLimits(UPPER_LIMIT, UNDER_LIMIT);
 	pass.filter(*plane_cloud);
 	pass.setFilterLimitsNegative(true);
 	pass.filter(*curv_cloud);
 	
 }
 
-// void PointCloudTransform::SetCurvature(void)
-// {
-// 	pcl::NormalEstimation<pcl::PointXYZRGBNormal, pcl::PointXYZRGBNormal> ne;
-// 	ne.setInputCloud (cloud_cpy);
-// 	pcl::search::KdTree<pcl::PointXYZRGBNormal>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGBNormal> ());
-// 	ne.setSearchMethod(tree);
-// 	ne.setRadiusSearch(0.3);
-// 	ne.compute(*cloud_cpy);
-// 	
-// 	const double CURVATURE_THRESHOLD = 3.0e-4;
-//
-// 	int loop_lim = cloud_cpy->points.size();
-// 	for(int i=0; i<loop_lim; i++){
-// 		if(cloud_cpy->points[i].curvature>CURVATURE_THRESHOLD){
-// 			curv_cloud->points.push_back(cloud_cpy->points[i]);
-// 		}else{
-// 			plane_cloud->points.push_back(cloud_cpy->points[i]);
-// 			
-// 		}
-// 	}
-// }
 
 int main(int argc, char** argv)
 {
