@@ -26,9 +26,8 @@ class PointCloudTransform{
 		sensor_msgs::PointCloud2 curv;
 		sensor_msgs::PointCloud2 plane;
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud {new pcl::PointCloud<pcl::PointXYZRGB>()};
-		pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr curv_cloud {new pcl::PointCloud<pcl::PointXYZRGBNormal>()};
-		pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr plane_cloud {new pcl::PointCloud<pcl::PointXYZRGBNormal>()};
-		pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_cpy {new pcl::PointCloud<pcl::PointXYZRGBNormal>()};
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr curv_cloud {new pcl::PointCloud<pcl::PointXYZRGB>()};
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr plane_cloud {new pcl::PointCloud<pcl::PointXYZRGB>()};
 
 		double UPPER_LIMIT;
 		double UNDER_LIMIT;
@@ -77,9 +76,7 @@ void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
 	pcl::fromROSMsg(*msg, *pcl_cloud);
 
-	pcl::copyPointCloud(*pcl_cloud, *cloud_cpy);
 	Passthrough();
-	// SetCurvature();
 
 	pcl::toROSMsg(*curv_cloud, curv);
 	pcl::toROSMsg(*plane_cloud, plane);
@@ -94,24 +91,28 @@ void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 
 void PointCloudTransform::Passthrough(void)
 {
-	pcl::PassThrough<pcl::PointXYZRGBNormal> pass;
-	pass.setInputCloud(cloud_cpy);
+	pcl::PassThrough<pcl::PointXYZRGB> pass;
+	pass.setInputCloud(pcl_cloud);
 	pass.setFilterFieldName("x");
 	pass.setFilterLimits(VIEW_RANGE_X_MIN, VIEW_RANGE_X_MAX);
-	pass.filter(*cloud_cpy);
-	pass.setInputCloud(cloud_cpy);
+	pass.filter(*pcl_cloud);
+	pass.setInputCloud(pcl_cloud);
 	pass.setFilterFieldName("y");
 	pass.setFilterLimits(VIEW_RANGE_Y_MIN, VIEW_RANGE_Y_MAX);
-	pass.filter(*cloud_cpy);
+	pass.filter(*pcl_cloud);
+	pass.setInputCloud(pcl_cloud);
 	pass.setFilterFieldName("z");
-	pass.setFilterLimits(VIEW_RANGE_Z_MIN, VIEW_RANGE_Z_MIN);
-	pass.filter(*cloud_cpy);
+	pass.setFilterLimits(VIEW_RANGE_Z_MIN, VIEW_RANGE_Z_MAX);
+	pass.filter(*pcl_cloud);
 
-	pass.setFilterLimits(UPPER_LIMIT, UNDER_LIMIT);
+	pass.setInputCloud(pcl_cloud);
+	pass.setFilterLimits(UNDER_LIMIT, UPPER_LIMIT);
 	pass.filter(*plane_cloud);
-	pass.setFilterLimitsNegative(true);
-	pass.filter(*curv_cloud);
 	
+	pass.setFilterLimitsNegative(true);
+	pass.setInputCloud(pcl_cloud);
+	pass.setFilterLimits(UNDER_LIMIT, UPPER_LIMIT);
+	pass.filter(*curv_cloud);
 }
 
 

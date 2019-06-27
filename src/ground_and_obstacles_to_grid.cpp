@@ -25,10 +25,13 @@ class OccupancyGridLidar{
 		
 		/*publish*/
 		ros::Publisher pub;
+		ros::Publisher pub_grass;
 		
 		/*cloud*/
+		sensor_msgs::PointCloud2 grass;
 		pcl::PointCloud<pcl::PointXYZI>::Ptr rmground {new pcl::PointCloud<pcl::PointXYZI>};
 		pcl::PointCloud<pcl::PointXYZINormal>::Ptr ground {new pcl::PointCloud<pcl::PointXYZINormal>};
+		pcl::PointCloud<pcl::PointXYZINormal>::Ptr grass_points {new pcl::PointCloud<pcl::PointXYZINormal>};
 		/*grid*/
 		nav_msgs::OccupancyGrid grid;
 		nav_msgs::OccupancyGrid grid_all_minusone;
@@ -90,6 +93,7 @@ OccupancyGridLidar::OccupancyGridLidar()
 	sub_rmground = nh.subscribe("/rm_ground", 1, &OccupancyGridLidar::CallbackRmGround, this);
 	sub_ground = nh.subscribe("/ground", 1, &OccupancyGridLidar::CallbackGround, this);
 	pub = nh.advertise<nav_msgs::OccupancyGrid>("/occupancygrid/lidar", 1);
+	pub_grass = nh.advertise<sensor_msgs::PointCloud2>("/grass_points", 1);
 	range_road_intensity[0] = ROAD_INTENSITY_MIN;
 	range_road_intensity[1] = ROAD_INTENSITY_MAX;
 	GridInitialization();
@@ -133,6 +137,7 @@ void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr
 	pub_stamp = msg->header.stamp;
 
 	InputGrid();
+
 	if(!first_callback_ground)
 		Publication();
 }/*}}}*/
@@ -182,6 +187,9 @@ bool OccupancyGridLidar::CellIsInside(nav_msgs::OccupancyGrid &grid, int x, int 
 
 void OccupancyGridLidar::Filter(void)
 {
+	grass_points->points.clear();
+	pcl::PointXYZINormal pt;
+	pt.z=0;
 	size_t loop_lim = grid.data.size();
 	for(size_t i=0;i<loop_lim;i++){
 		if(grid.data[i]==grass_score){
@@ -201,9 +209,16 @@ void OccupancyGridLidar::Filter(void)
 			}
 			int num_cells = count_zerocell+count_grasscell;
 			double threshold = num_cells*ZEROCELL_RATIO;
-			if(count_zerocell>=threshold)	grid.data[i] = 0;
+			if(count_zerocell>=threshold){
+				grid.data[i] = 0;
+			}else{
+				pt.x=x*resolution;
+				pt.y=y*resolution;
+				grass_points->points.push_back(pt);
+			}
 		}
 	}
+	std::cout << "grass_points.size : " << grass_points->points.size() << std::endl;
 }
 
 void OccupancyGridLidar::InputGrid(void)
@@ -215,6 +230,7 @@ void OccupancyGridLidar::InputGrid(void)
 		if(ground->points[i].intensity<range_road_intensity[0] ||
 		   ground->points[i].intensity>range_road_intensity[1]){
 			grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = grass_score;
+			
 		}else
 			grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = 0;
 	}
@@ -255,6 +271,11 @@ void OccupancyGridLidar::Publication(void)
 	grid.header.frame_id = pub_frameid;
 	grid.header.stamp = pub_stamp;
 	pub.publish(grid);
+
+	pcl::toROSMsg(*grass_points, grass);
+	grass.header.frame_id = pub_frameid;
+	grass.header.stamp = pub_stamp;
+	pub_grass.publish(grass);
 }
 
 int main(int argc, char** argv)
