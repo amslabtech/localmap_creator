@@ -10,14 +10,14 @@
 		<remap from="/cloud" to="/realsense/downsampled"/>
 		<remap from="/cloud/curv" to="/realsense/obstacles"/>
 		<remap from="/cloud/plane" to="/realsense/clear"/>
-		<param name="UPPER_LIMIT" value="0.15" type="double"/>
-		<param name="UNDER_LIMIT" value="-0.1" type="double"/>
+		<param name="UPPER_LIMIT" value="0.1" type="double"/>
+		<param name="UNDER_LIMIT" value="-0.05" type="double"/>
 		<param name="VIEW_RANGE_X_MIN" value="0.3" type="double"/>
 		<param name="VIEW_RANGE_X_MAX" value="1.2" type="double"/>
 		<param name="VIEW_RANGE_Y_MIN" value="-0.8" type="double"/>
 		<param name="VIEW_RANGE_Y_MAX" value="0.8" type="double"/>
-		<param name="VIEW_RANGE_Z_MIN" value="0.5" type="double"/>
-		<param name="VIEW_RANGE_Z_MAX" value="-0.5" type="double"/>
+		<param name="VIEW_RANGE_Z_MIN" value="-0.5" type="double"/>
+		<param name="VIEW_RANGE_Z_MAX" value="0.5" type="double"/>
 		
 	</node>
 
