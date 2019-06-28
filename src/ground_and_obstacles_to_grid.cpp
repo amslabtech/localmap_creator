@@ -34,6 +34,7 @@ class OccupancyGridLidar{
 		pcl::PointCloud<pcl::PointXYZINormal>::Ptr grass_points {new pcl::PointCloud<pcl::PointXYZINormal>};
 		/*grid*/
 		nav_msgs::OccupancyGrid grid;
+		nav_msgs::OccupancyGrid grid_filtered;
 		nav_msgs::OccupancyGrid grid_all_minusone;
 		
 		/*tf*/
@@ -187,6 +188,7 @@ bool OccupancyGridLidar::CellIsInside(nav_msgs::OccupancyGrid &grid, int x, int 
 
 void OccupancyGridLidar::Filter(void)
 {
+	grid_filtered = grid;
 	grass_points->points.clear();
 	pcl::PointXYZINormal pt;
 	pt.z=0;
@@ -210,7 +212,7 @@ void OccupancyGridLidar::Filter(void)
 			int num_cells = count_zerocell+count_grasscell;
 			double threshold = num_cells*ZEROCELL_RATIO;
 			if(count_zerocell>=threshold){
-				grid.data[i] = 0;
+				grid_filtered.data[i] = 0;
 			}else{
 				pt.x=x*resolution;
 				pt.y=y*resolution;
@@ -268,9 +270,9 @@ int OccupancyGridLidar::PointToIndex(nav_msgs::OccupancyGrid &grid, int x, int y
 
 void OccupancyGridLidar::Publication(void)
 {
-	grid.header.frame_id = pub_frameid;
-	grid.header.stamp = pub_stamp;
-	pub.publish(grid);
+	grid_filtered.header.frame_id = pub_frameid;
+	grid_filtered.header.stamp = pub_stamp;
+	pub.publish(grid_filtered);
 
 	pcl::toROSMsg(*grass_points, grass);
 	grass.header.frame_id = pub_frameid;
