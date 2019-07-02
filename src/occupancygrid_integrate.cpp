@@ -141,14 +141,21 @@ void OccupancyGridCombination::CallbackGridHokuyo(const nav_msgs::OccupancyGridC
 void OccupancyGridCombination::Expand(void)
 {
 	int loop_lim = grid.data.size();
+	double reso = grid.info.resolution;
+	int Data = 0;
 	for(size_t i=0;i<loop_lim;i++){
-		if(grid.data[i]==100){
+		if(grid.data[i]){
+			Data = grid.data[i];
 			int x, y;
 			IndexToPoint(grid, i, x, y);
 			for(int j=-expand_range;j<=expand_range;j++){
 				for(int k=-expand_range;k<=expand_range;k++){
 					if(CellIsInside(grid, x+j, y+k)){ 
-						grid_expand.data[PointToIndex(grid, x+j,y+k)] = 100;
+						if(sqrt(j*j+k*k)<=expand_range){
+							if(grid_expand.data[PointToIndex(grid, x+j,y+k)]<=Data){
+								grid_expand.data[PointToIndex(grid, x+j,y+k)] = Data;
+							}
+						}
 					}
 				}
 			}
