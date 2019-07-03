@@ -32,9 +32,9 @@ class OccupancyGridCombination{
 		ros::Time time_odom_last;
 		ros::Time time_pub;
 		/*param*/
-		int EXPAND_RANGE;
-		int EXPAND_RANGE_MINI;
-		int expand_range;
+		double EXPAND_RANGE;
+		double EXPAND_RANGE_MINI;
+		double expand_range;
 
 	public:
 		OccupancyGridCombination();
@@ -53,8 +53,8 @@ class OccupancyGridCombination{
 OccupancyGridCombination::OccupancyGridCombination()
 	: private_nh("~")
 {
-	private_nh.param("EXPAND_RANGE", EXPAND_RANGE, {4});
-	private_nh.param("EXPAND_RANGE_MINI", EXPAND_RANGE_MINI, {2});
+	private_nh.param("EXPAND_RANGE", EXPAND_RANGE, {0.4});
+	private_nh.param("EXPAND_RANGE_MINI", EXPAND_RANGE_MINI, {0.2});
 	std::cout << "EXPAND_RANGE 		: " << EXPAND_RANGE << std::endl;
 	std::cout << "EXPAND_RANGE_MINI : " << EXPAND_RANGE_MINI << std::endl;
 
@@ -84,7 +84,7 @@ void OccupancyGridCombination::CallbackExpandFlag(const std_msgs::BoolConstPtr& 
 
 void OccupancyGridCombination::CallbackGridLidar(const nav_msgs::OccupancyGridConstPtr& msg)
 {
-	std::cout<<"CallbackGridLidar"<<std::endl;	
+	// std::cout<<"CallbackGridLidar"<<std::endl;	
 	grid_lidar = *msg;
 
 	if(first_callback_grid_lidar && first_callback_grid_realsense && first_callback_grid_hokuyo){
@@ -102,7 +102,7 @@ void OccupancyGridCombination::CallbackGridLidar(const nav_msgs::OccupancyGridCo
 
 void OccupancyGridCombination::CallbackGridRealsense(const nav_msgs::OccupancyGridConstPtr& msg)
 {
-	std::cout<<"CallbackGridRealsense"<<std::endl;	
+	// std::cout<<"CallbackGridRealsense"<<std::endl;	
 	grid_realsense = *msg;
 	
 	if(first_callback_grid_lidar && first_callback_grid_realsense && first_callback_grid_hokuyo){
@@ -121,7 +121,7 @@ void OccupancyGridCombination::CallbackGridRealsense(const nav_msgs::OccupancyGr
 
 void OccupancyGridCombination::CallbackGridHokuyo(const nav_msgs::OccupancyGridConstPtr& msg)
 {
-	std::cout<<"CallbackGridHokuyo"<<std::endl;	
+	// std::cout<<"CallbackGridHokuyo"<<std::endl;	
 	grid_hokuyo = *msg;
 
 	if(first_callback_grid_lidar && first_callback_grid_realsense && first_callback_grid_hokuyo){
@@ -142,16 +142,18 @@ void OccupancyGridCombination::Expand(void)
 {
 	int loop_lim = grid.data.size();
 	double reso = grid.info.resolution;
+	double reso_inv = 1/reso;
+	int expand_range_int = int(expand_range*reso_inv);
 	int Data = 0;
 	for(size_t i=0;i<loop_lim;i++){
 		if(grid.data[i]){
 			Data = grid.data[i];
 			int x, y;
 			IndexToPoint(grid, i, x, y);
-			for(int j=-expand_range;j<=expand_range;j++){
-				for(int k=-expand_range;k<=expand_range;k++){
+			for(int j=-expand_range_int;j<=expand_range_int;j++){
+				for(int k=-expand_range_int;k<=expand_range_int;k++){
 					if(CellIsInside(grid, x+j, y+k)){ 
-						if(sqrt(j*j+k*k)<=expand_range){
+						if(sqrt(j*j+k*k)*reso<=expand_range){
 							if(grid_expand.data[PointToIndex(grid, x+j,y+k)]<=Data){
 								grid_expand.data[PointToIndex(grid, x+j,y+k)] = Data;
 							}
@@ -206,7 +208,7 @@ bool OccupancyGridCombination::CellIsInside(nav_msgs::OccupancyGrid &grid, int x
 
 void OccupancyGridCombination::Publication(void)
 {
-	std::cout<<"Publication"<<std::endl;	
+	// std::cout<<"Publication"<<std::endl;	
 	grid.header.stamp = time_pub;
 	grid_expand.header.stamp = time_pub;
 	pub.publish(grid);
