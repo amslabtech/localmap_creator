@@ -58,8 +58,8 @@
 		<remap from="/occupancygrid/lidar/stored" to="/occupancygrid/velodyne"/>
 		<remap from="/occupancygrid/realsense" to="/occupancygrid/realsense"/>
 		<remap from="/occupancygrid/hokuyo" to="/occupancygrid/hokuyo"/>
-		<param name="EXPAND_RANGE" value="3" type="int"/>
-		<param name="EXPAND_RANGE_MINI" value="1" type="int"/>
+		<param name="EXPAND_RANGE" value="0.3" type="double"/>
+		<param name="EXPAND_RANGE_MINI" value="0.15" type="double"/>
 	</node>
 
 </launch>
