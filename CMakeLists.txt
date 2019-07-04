@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   cv_bridge
   image_transport
+  image_geometry
   pcl_ros
   laser_geometry
 )
@@ -227,3 +228,5 @@ add_executable(realsense_to_grid src/realsense_to_grid.cpp)
 target_link_libraries(realsense_to_grid ${catkin_LIBRARIES})
 add_executable(realsense_object src/realsense_object.cpp)
 target_link_libraries(realsense_object ${catkin_LIBRARIES})
+add_executable(depth2point src/depth2point.cpp)
+target_link_libraries(depth2point ${catkin_LIBRARIES})
