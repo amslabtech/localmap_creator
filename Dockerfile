@@ -11,7 +11,8 @@ RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_releas
          && wget http://packages.osrfoundation.org/gazebo.key -O - | apt-key add -
 
 RUN apt-get install -y ros-kinetic-pcl* \
-                       libpcl-dev
+                       libpcl-dev \
+					   ros-kinetic-image-geometry
 
 RUN apt-get update
 
