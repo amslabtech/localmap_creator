@@ -230,3 +230,12 @@ add_executable(realsense_object src/realsense_object.cpp)
 target_link_libraries(realsense_object ${catkin_LIBRARIES})
 add_executable(depth2point src/depth2point.cpp)
 target_link_libraries(depth2point ${catkin_LIBRARIES})
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest_gtest(making_localmap_test
+    test/making_localmap.test
+    test/making_localmap_test.cpp
+  )
+  target_link_libraries(making_localmap_test ${catkin_LIBRARIES})
+endif()
