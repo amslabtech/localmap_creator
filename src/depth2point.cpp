@@ -15,7 +15,7 @@ class Depth2Point
         Depth2Point();
         void frameCallback(const sensor_msgs::Image::ConstPtr& msg);
         void CameraInfoCallback(const sensor_msgs::CameraInfo::ConstPtr& msg);
-		void depth_to_pointcloud();
+		void depth_to_pointcloud(sensor_msgs::PointCloud2& cloud_msg);
 		void publication();
      private:
         ros::NodeHandle nh;
@@ -25,11 +25,13 @@ class Depth2Point
 
 		sensor_msgs::CameraInfo cam;
 		sensor_msgs::Image image;
+		sensor_msgs::CompressedImage compressed_image;
 		pcl::PointCloud<pcl::PointXYZ>::Ptr pcl {new pcl::PointCloud<pcl::PointXYZ>()};
 		sensor_msgs::PointCloud2 pc2;
 
 		bool cam_flag = false;
 		ros::Time pub_time;
+		std::string pub_frameid;
 };
 
 Depth2Point::Depth2Point()
@@ -42,6 +44,7 @@ Depth2Point::Depth2Point()
 
 void Depth2Point::CameraInfoCallback(const sensor_msgs::CameraInfo::ConstPtr& msg)
 {
+	std::cout << "-----camera info call back-----" << std::endl;
 	cam = *msg;
 	cam_flag = true;
 }
@@ -49,17 +52,30 @@ void Depth2Point::CameraInfoCallback(const sensor_msgs::CameraInfo::ConstPtr& ms
 
 void Depth2Point::frameCallback(const sensor_msgs::Image::ConstPtr& msg)
 {
+	std::cout << "-----frame call back-----" << std::endl;
 	image = *msg;
-	pc2.header.frame_id = msg->header.frame_id;
+	
+	pub_frameid = msg->header.frame_id;
 	pub_time = msg->header.stamp;
+
+	pc2.height = msg->height;
+	pc2.width = msg->width;
+	pc2.is_dense = false;
+	pc2.is_bigendian = false;
+	pc2.fields.clear();
+	pc2.fields.reserve(1);
+
+	sensor_msgs::PointCloud2Modifier pcd_modifier(pc2);
+	pcd_modifier.setPointCloud2FieldsByString(1, "xyz");
 	if(cam_flag){
-		depth_to_pointcloud();
+		depth_to_pointcloud(pc2);
 	}
 	publication();
 }
 
-void Depth2Point::depth_to_pointcloud()
+void Depth2Point::depth_to_pointcloud(sensor_msgs::PointCloud2& cloud_msg)
 {
+	std::cout << "-----Depth to Point-----" << std::endl;
 	image_geometry::PinholeCameraModel model;
 	model.fromCameraInfo(cam);
 
@@ -72,9 +88,9 @@ void Depth2Point::depth_to_pointcloud()
 	float constant_y = unit_scaling / model.fy();
 	float bad_point = std::numeric_limits<float>::quiet_NaN();
 
-	sensor_msgs::PointCloud2Iterator<float> iter_x(pc2, "x");	
-	sensor_msgs::PointCloud2Iterator<float> iter_y(pc2, "y");	
-	sensor_msgs::PointCloud2Iterator<float> iter_z(pc2, "z");	
+	sensor_msgs::PointCloud2Iterator<float> iter_x(cloud_msg, "x");	
+	sensor_msgs::PointCloud2Iterator<float> iter_y(cloud_msg, "y");	
+	sensor_msgs::PointCloud2Iterator<float> iter_z(cloud_msg, "z");	
 
 	const uint16_t* depth_row = reinterpret_cast<uint16_t*>(image.data[0]); 
 
@@ -85,6 +101,7 @@ void Depth2Point::depth_to_pointcloud()
 
 	for(int v=0; v < height; ++v, depth_row += row_step){
 		for(int u=0; u < width; ++u, ++iter_x, ++iter_y, ++iter_z){
+	std::cout << "-----kokodeowaru-----" << std::endl;
 			uint32_t depth = depth_row[u];
 
 			if(!depth){
@@ -108,6 +125,7 @@ void Depth2Point::depth_to_pointcloud()
 void Depth2Point::publication()
 {
 	pc2.header.stamp = pub_time;
+	pc2.header.frame_id = pub_frameid;
 	pub_pcl.publish(pc2);
 
 }
