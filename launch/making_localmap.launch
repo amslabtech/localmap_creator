@@ -33,13 +33,14 @@
 		<!-- velodyne -->
 	<node pkg="making_local_map" type="ground_and_obstacles_to_grid" name="velodyne_localmap" ns="making_localmap">
 		<remap from="/rm_ground" to="/velodyne_obstacles"/>
-		<remap from="/ground" to="/velodyne_clear"/>
+		<!-- <remap from="/ground" to="/velodyne_clear"/> -->
+		<remap from="/ground" to="/recognition/road_recognizer/cloud/road/stored"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/velodyne"/>
 		<remap from="/grass_points" to="/grass_points"/>
 		<param name="ROAD_INTENSITY_MIN" value="1" type="double"/>
 		<param name="ROAD_INTENSITY_MAX" value="15" type="double"/>
-		<param name="ZEROCELL_RATIO" value="0.4" type="double"/>
-		<param name="FILTER_RANGE" value="3" type="int"/>
+		<param name="ZEROCELL_RATIO" value="0.15" type="double"/>
+		<param name="FILTER_RANGE" value="4" type="int"/>
 	</node>
 		<!-- realsense -->
 	<node pkg="making_local_map" type="realsense_to_grid" name="realsense_localmap" ns="making_localmap">

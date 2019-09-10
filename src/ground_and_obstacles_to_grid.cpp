@@ -6,6 +6,7 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/filters/passthrough.h>
+#include <pcl/filters/voxel_grid.h>
 // #include <pcl/filters/crop_box.h>
 #include <pcl/features/normal_3d.h> 
 #include <pcl_ros/point_cloud.h>
@@ -115,7 +116,7 @@ void OccupancyGridLidar::GridInitialization(void)/*{{{*/
 	grid.info.origin.orientation.z = 0.0;
 	grid.info.origin.orientation.w = 1.0;
 	int loop_lim = grid.info.width*grid.info.height;
-	for(int i=0;i<loop_lim;i++)	grid.data.push_back(-1);
+	for(int i=0;i<loop_lim;i++)	grid.data.push_back(0);
 	// frame_id is same as the one of subscribed pc
 	grid_all_minusone = grid;
 }/*}}}*/
@@ -124,23 +125,30 @@ void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr
 {
 	
 	sensor_msgs::PointCloud2 pc2_out;
+	double time = ros::Time::now().toSec();
 	try{
+
 		pcl_ros::transformPointCloud("/base_link", *msg, pc2_out, tflistener);
+
+		std::cout << "sub_rmground_num" << msg->data.size() << std::endl;
 	}
 	catch(tf::TransformException ex){
 		ROS_ERROR("%s",ex.what());
 	}
+	std::cout << "time: " << ros::Time::now().toSec() - time << std::endl;
 	pcl::fromROSMsg(pc2_out, *rmground);
-
+	std::cout << "pcl_rmground_num" << rmground->points.size() << std::endl;
 	ExtractPCInRange(rmground);
-
 	pub_frameid = "/base_link";
 	pub_stamp = msg->header.stamp;
 
 	InputGrid();
 
-	if(!first_callback_ground)
+	if(!first_callback_ground){
 		Publication();
+	}
+
+
 }/*}}}*/
 
 void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &msg)/*{{{*/
@@ -148,12 +156,19 @@ void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &
 	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc {new pcl::PointCloud<pcl::PointXYZI>};
 	sensor_msgs::PointCloud2 pc2_out;
 	try{
-		pcl_ros::transformPointCloud("/base_link", *msg, pc2_out, tflistener);
+		std::cout << "sub_ground_num" << msg->data.size() << std::endl;
+		pcl::fromROSMsg(*msg, *tmp_pc);
+		pcl::VoxelGrid<pcl::PointXYZI> sor;
+		sor.setInputCloud (tmp_pc);
+		sor.setLeafSize (0.05f, 0.05f, 0.05f);
+		sor.filter (*tmp_pc);
+
+		pcl_ros::transformPointCloud("/base_link", *tmp_pc, *tmp_pc, tflistener);
 	}
 	catch(tf::TransformException ex){
 		ROS_ERROR("%s",ex.what());
 	}
-	pcl::fromROSMsg(pc2_out, *tmp_pc);
+	// pcl::fromROSMsg(pc2_out, *tmp_pc);
 	ExtractPCInRange(tmp_pc);
 	
 	pcl::copyPointCloud(*tmp_pc, *ground);
@@ -229,12 +244,14 @@ void OccupancyGridLidar::InputGrid(void)
 	//intensity
 	size_t loop_lim = ground->points.size();
 	for(size_t i=0;i<loop_lim;i++){
-		if(ground->points[i].intensity<range_road_intensity[0] ||
-		   ground->points[i].intensity>range_road_intensity[1]){
-			grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = grass_score;
-			
-		}else
-			grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = 0;
+		// if(ground->points[i].intensity<range_road_intensity[0] ||
+		// ground->points[i].intensity>range_road_intensity[1]){
+		// 	grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = grass_score;
+		// 	
+		// }else{
+		// 	grid.data[Meterpoin
+		// }
+		grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = grass_score;
 	}
 	//obstacle
 	loop_lim = rmground->points.size();

@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(making_local_map)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+# SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -O0 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -22,6 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV REQUIRED)
+find_package(PCL 1.8 REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -128,6 +130,8 @@ include_directories(
   ${PCL_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
@@ -207,29 +211,65 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 add_executable(pc_transform src/pc_transform.cpp)
-target_link_libraries(pc_transform ${catkin_LIBRARIES})
+target_link_libraries(pc_transform 
+	${catkin_LIBRARIES}
+  	${PCL_LIBRARIES}
+)
 add_executable(pc_frameid_renamer src/pc_frameid_renamer.cpp)
-target_link_libraries(pc_frameid_renamer ${catkin_LIBRARIES})
+target_link_libraries(pc_frameid_renamer 
+	${catkin_LIBRARIES}
+  	${PCL_LIBRARIES}
+)
 add_executable(all_pc_to_occupancygrid src/all_pc_to_occupancygrid.cpp)
-target_link_libraries(all_pc_to_occupancygrid ${catkin_LIBRARIES})
+target_link_libraries(all_pc_to_occupancygrid 
+	${catkin_LIBRARIES}
+  	${PCL_LIBRARIES}
+)
 add_executable(ground_and_obstacles_to_grid src/ground_and_obstacles_to_grid.cpp)
-target_link_libraries(ground_and_obstacles_to_grid ${catkin_LIBRARIES})
+target_link_libraries(ground_and_obstacles_to_grid 
+	${catkin_LIBRARIES}
+  	${PCL_LIBRARIES}
+)
 add_executable(OccupancyGrid_store src/OccupancyGrid_store.cpp)
-target_link_libraries(OccupancyGrid_store ${catkin_LIBRARIES})
+target_link_libraries(OccupancyGrid_store 
+	${catkin_LIBRARIES}
+  	${PCL_LIBRARIES}
+)
 add_executable(occupancygrid_integrate src/occupancygrid_integrate.cpp)
-target_link_libraries(occupancygrid_integrate ${catkin_LIBRARIES})
+target_link_libraries(occupancygrid_integrate 
+	${catkin_LIBRARIES}
+  	${PCL_LIBRARIES}
+)
 add_executable(hokuyo_raycast src/hokuyo_raycast.cpp)
-target_link_libraries(hokuyo_raycast ${catkin_LIBRARIES})
+target_link_libraries(hokuyo_raycast 
+	${catkin_LIBRARIES}
+  	${PCL_LIBRARIES}
+)
 add_executable(scan2pcl src/scan2pcl.cpp)
-target_link_libraries(scan2pcl ${catkin_LIBRARIES})
+target_link_libraries(scan2pcl 
+	${catkin_LIBRARIES}
+  	${PCL_LIBRARIES}
+)
 add_executable(downsample_and_transform src/downsample_and_transform.cpp)
-target_link_libraries(downsample_and_transform ${catkin_LIBRARIES})
+target_link_libraries(downsample_and_transform 
+	${catkin_LIBRARIES}
+  	${PCL_LIBRARIES}
+)
 add_executable(realsense_to_grid src/realsense_to_grid.cpp)
-target_link_libraries(realsense_to_grid ${catkin_LIBRARIES})
+target_link_libraries(realsense_to_grid 
+	${catkin_LIBRARIES}
+  	${PCL_LIBRARIES}
+)
 add_executable(realsense_object src/realsense_object.cpp)
-target_link_libraries(realsense_object ${catkin_LIBRARIES})
+target_link_libraries(realsense_object 
+	${catkin_LIBRARIES}
+  	${PCL_LIBRARIES}
+)
 add_executable(depth2point src/depth2point.cpp)
-target_link_libraries(depth2point ${catkin_LIBRARIES})
+target_link_libraries(depth2point 
+	${catkin_LIBRARIES}
+  	${PCL_LIBRARIES}
+)
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
@@ -237,5 +277,7 @@ if(CATKIN_ENABLE_TESTING)
     test/making_localmap.test
     test/making_localmap_test.cpp
   )
-  target_link_libraries(making_localmap_test ${catkin_LIBRARIES})
+  target_link_libraries(making_localmap_test 
+	${catkin_LIBRARIES}
+)
 endif()
