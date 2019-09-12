@@ -175,10 +175,10 @@ void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &
 	double time = ros::Time::now().toSec();
 	try{
 		pcl::fromROSMsg(*msg, *tmp_pc);
-		pcl::VoxelGrid<pcl::PointXYZI> sor;
-		sor.setInputCloud (tmp_pc);
-		sor.setLeafSize (0.05f, 0.05f, 0.05f);
-		sor.filter (*tmp_pc);
+		// pcl::VoxelGrid<pcl::PointXYZI> sor;
+		// sor.setInputCloud (tmp_pc);
+		// sor.setLeafSize (0.05f, 0.05f, 0.05f);
+		// sor.filter (*tmp_pc);
 
 		pcl_ros::transformPointCloud("/base_link", *tmp_pc, *tmp_pc, tflistener);
 		std::cout << "delay of ground transform	: " << ros::Time::now().toSec() - time << std::endl;

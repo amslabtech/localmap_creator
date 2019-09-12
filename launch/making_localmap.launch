@@ -45,7 +45,7 @@
 		<remap from="/grass_points" to="/grass_points"/>
 		<param name="ROAD_INTENSITY_MIN" value="1" type="double"/>
 		<param name="ROAD_INTENSITY_MAX" value="15" type="double"/>
-		<param name="ZEROCELL_RATIO" value="0.15" type="double"/>
+		<param name="ZEROCELL_RATIO" value="0.2" type="double"/>
 		<param name="FILTER_RANGE" value="4" type="int"/>
 		<param name="resolution" value="$(arg resolution)" type="double"/>
 		<param name="w" value="$(arg w)" type="double"/>
