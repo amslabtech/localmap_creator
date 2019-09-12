@@ -17,6 +17,7 @@
 class OccupancyGridLidar{
 	private:
 		ros::NodeHandle nh;
+		ros::NodeHandle private_nh;
 		
 		/*subscribe*/
 		ros::Subscriber sub_rmground;
@@ -40,9 +41,9 @@ class OccupancyGridLidar{
 		ros::Time pub_stamp;
 		
 		/*const values*/
-		const double w = 20.0;	//x[m]
-		const double h = 20.0;	//y[m]
-		const double resolution = 0.1;	//[m]
+		double w;	//x[m]
+		double h;	//y[m]
+		double resolution;	//[m]
 		// const double range_road_intensity[2] = {2, 15};
 		
 		bool first_callback_ground = true;
@@ -61,7 +62,16 @@ class OccupancyGridLidar{
 
 
 OccupancyGridLidar::OccupancyGridLidar()
+	: private_nh("~")
 {
+	private_nh.param("resolution", resolution, {0.1});
+	private_nh.param("w", w, {20.0});
+	private_nh.param("h", h, {20.0});
+	
+	std::cout << "resolution         : " << resolution << std::endl;
+	std::cout << "w                  : " << w << std::endl;
+	std::cout << "h                  : " << h << std::endl;
+	
 	sub_rmground = nh.subscribe("/rm_ground", 1, &OccupancyGridLidar::CallbackRmGround, this);
 	sub_ground = nh.subscribe("/ground", 1, &OccupancyGridLidar::CallbackGround, this);
 	pub = nh.advertise<nav_msgs::OccupancyGrid>("/occupancygrid/lidar", 1);
