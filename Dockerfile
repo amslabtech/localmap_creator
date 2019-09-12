@@ -1,4 +1,4 @@
-FROM osrf/ros:kinetic-desktop
+FROM osrf/ros:melodic-desktop
 
 RUN apt-get update
 
@@ -7,15 +7,12 @@ RUN apt-get install -y sudo \
                        lsb-release \
                        mesa-utils \
                        python-pip \
-                       ros-kinetic-pcl-ros \
+                       ros-melodic-pcl-ros \
                        libpcl-dev
 
-RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-latest.list \
-         && wget http://packages.osrfoundation.org/gazebo.key -O - | apt-key add -
-
-RUN apt-get install -y ros-kinetic-pcl* \
+RUN apt-get install -y ros-melodic-pcl* \
                        libpcl-dev \
-                       ros-kinetic-image-geometry
+                       ros-melodic-image-geometry
 
 RUN apt-get update
 
@@ -24,9 +21,9 @@ WORKDIR /root
 # ROS setting
 RUN /bin/bash -c "mkdir -p catkin_ws/src"
 
-RUN cd catkin_ws/src && /bin/bash -c "source /opt/ros/kinetic/setup.bash; catkin_init_workspace"
+RUN cd catkin_ws/src && /bin/bash -c "source /opt/ros/melodic/setup.bash; catkin_init_workspace"
 
-RUN cd catkin_ws && /bin/bash -c "source /opt/ros/kinetic/setup.bash; catkin_make"
+RUN cd catkin_ws && /bin/bash -c "source /opt/ros/melodic/setup.bash; catkin_make"
 
 RUN cd /root && echo source /root/catkin_ws/devel/setup.bash >> .bashrc
 

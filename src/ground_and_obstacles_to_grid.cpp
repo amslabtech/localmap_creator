@@ -127,17 +127,13 @@ void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr
 	sensor_msgs::PointCloud2 pc2_out;
 	double time = ros::Time::now().toSec();
 	try{
-
 		pcl_ros::transformPointCloud("/base_link", *msg, pc2_out, tflistener);
-
-		std::cout << "sub_rmground_num" << msg->data.size() << std::endl;
 	}
 	catch(tf::TransformException ex){
 		ROS_ERROR("%s",ex.what());
 	}
-	std::cout << "time: " << ros::Time::now().toSec() - time << std::endl;
+	std::cout << "time_rmground: " << ros::Time::now().toSec() - time << std::endl;
 	pcl::fromROSMsg(pc2_out, *rmground);
-	std::cout << "pcl_rmground_num" << rmground->points.size() << std::endl;
 	ExtractPCInRange(rmground);
 	pub_frameid = "/base_link";
 	pub_stamp = msg->header.stamp;
@@ -155,6 +151,7 @@ void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &
 {
 	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc {new pcl::PointCloud<pcl::PointXYZI>};
 	sensor_msgs::PointCloud2 pc2_out;
+	double time = ros::Time::now().toSec();
 	try{
 		std::cout << "sub_ground_num" << msg->data.size() << std::endl;
 		pcl::fromROSMsg(*msg, *tmp_pc);
@@ -168,6 +165,7 @@ void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &
 	catch(tf::TransformException ex){
 		ROS_ERROR("%s",ex.what());
 	}
+	std::cout << "time_ground: " << ros::Time::now().toSec() - time << std::endl;
 	// pcl::fromROSMsg(pc2_out, *tmp_pc);
 	ExtractPCInRange(tmp_pc);
 	
@@ -235,7 +233,7 @@ void OccupancyGridLidar::Filter(void)
 			}
 		}
 	}
-	std::cout << "grass_points.size : " << grass_points->points.size() << std::endl;
+	// std::cout << "grass_points.size : " << grass_points->points.size() << std::endl;
 }
 
 void OccupancyGridLidar::InputGrid(void)
