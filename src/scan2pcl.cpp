@@ -4,9 +4,9 @@
 #include <laser_geometry/laser_geometry.h>
 #include <sensor_msgs/PointCloud2.h>
 
-class My_Filter {
+class SCAN_TO_PCL {
      public:
-        My_Filter();
+        SCAN_TO_PCL();
         void scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan);
      private:
         ros::NodeHandle nh;
@@ -16,13 +16,13 @@ class My_Filter {
         ros::Publisher point_cloud_publisher_;
         ros::Subscriber scan_sub_;
 };
-My_Filter::My_Filter(){
-    scan_sub_ = nh.subscribe<sensor_msgs::LaserScan> ("/scan", 1, &My_Filter::scanCallback, this);
+SCAN_TO_PCL::SCAN_TO_PCL(){
+    scan_sub_ = nh.subscribe<sensor_msgs::LaserScan> ("/scan", 1, &SCAN_TO_PCL::scanCallback, this);
     point_cloud_publisher_ = nh.advertise<sensor_msgs::PointCloud2> ("/cloud", 1);
     tfListener_.setExtrapolationLimit(ros::Duration(0.1));
 }
 
-void My_Filter::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan){
+void SCAN_TO_PCL::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan){
 	sensor_msgs::PointCloud2 cloud;
 	try{
 		projector_.transformLaserScanToPointCloud("/base_link", *scan, cloud, tfListener_);
@@ -39,7 +39,7 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "scan2pcl");
 
-    My_Filter filter;
+    SCAN_TO_PCL scan_to_pcl;
 
     ros::spin();
 
