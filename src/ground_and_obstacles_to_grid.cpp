@@ -141,7 +141,10 @@ void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr
 	try{
 		pcl::fromROSMsg(*msg, *tmp_pc);
 		pcl_ros::transformPointCloud("/base_link", *tmp_pc, *tmp_pc, tflistener);
-		std::cout << "delay of rmground transform	: " << ros::Time::now().toSec() - time << std::endl;
+		if(ros::Time::now().toSec() - time){
+			std::cout << "delay of rmground transform	: " 
+				<< ros::Time::now().toSec() - time << std::endl;
+		}
 	}
 	catch(tf::TransformException ex){
 		ROS_ERROR("%s",ex.what());
@@ -160,7 +163,10 @@ void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr
 	
 	time = ros::Time::now().toSec();
 	Filter();
-	std::cout << "delay of filter			: " << ros::Time::now().toSec() - time << std::endl;
+	if(ros::Time::now().toSec() - time){
+		std::cout << "delay of filter			: " 
+			<< ros::Time::now().toSec() - time << std::endl;
+	}
 
 	if(!first_callback_ground){
 		Publication();
@@ -175,13 +181,12 @@ void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &
 	double time = ros::Time::now().toSec();
 	try{
 		pcl::fromROSMsg(*msg, *tmp_pc);
-		// pcl::VoxelGrid<pcl::PointXYZI> sor;
-		// sor.setInputCloud (tmp_pc);
-		// sor.setLeafSize (0.05f, 0.05f, 0.05f);
-		// sor.filter (*tmp_pc);
 
 		pcl_ros::transformPointCloud("/base_link", *tmp_pc, *tmp_pc, tflistener);
-		std::cout << "delay of ground transform	: " << ros::Time::now().toSec() - time << std::endl;
+		if(ros::Time::now().toSec() - time){
+			std::cout << "delay of ground transform	: " 
+				<< ros::Time::now().toSec() - time << std::endl;
+		}
 	}
 	catch(tf::TransformException ex){
 		ROS_ERROR("%s",ex.what());
@@ -205,7 +210,7 @@ void OccupancyGridLidar::ExtractPCInRange(pcl::PointCloud<pcl::PointXYZI>::Ptr &
 	pass.filter(*pc);
 }/*}}}*/
 
-bool OccupancyGridLidar::CellIsInside(nav_msgs::OccupancyGrid &grid, int x, int y)
+bool OccupancyGridLidar::CellIsInside(nav_msgs::OccupancyGrid &grid, int x, int y)/*{{{*/
 {   
 	int w = grid.info.width;
 	int h = grid.info.height;
@@ -214,7 +219,7 @@ bool OccupancyGridLidar::CellIsInside(nav_msgs::OccupancyGrid &grid, int x, int 
 	if(y<-h*0.5)  return false;
 	if(y>h*0.5-1) return false;
 	return true;
-}
+}/*}}}*/
 
 
 
@@ -242,7 +247,10 @@ void OccupancyGridLidar::Filter(void)
 				}
 			}
 			int num_cells = count_zerocell+count_grasscell;
-			double threshold = num_cells*ZEROCELL_RATIO;
+			double distance = sqrt(x*x + y*y) * resolution;
+			double fanction =  0.06 * distance + 0.1;
+			// double threshold = num_cells*ZEROCELL_RATIO;
+			double threshold = num_cells * fanction;
 			if(count_zerocell>=threshold){
 				grid_filtered.data[i] = 0;
 			}else{
