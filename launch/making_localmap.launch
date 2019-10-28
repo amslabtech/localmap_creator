@@ -38,7 +38,6 @@
 		<!-- velodyne -->
 	<node pkg="making_local_map" type="ground_and_obstacles_to_grid" name="velodyne_localmap" ns="making_localmap">
 		<remap from="/rm_ground" to="/velodyne_obstacles"/>
-		<!-- <remap from="/ground" to="/velodyne_clear"/> -->
 		<remap from="/ground" to="/recognition/road_recognizer/cloud/road/stored"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/velodyne/filtered"/>
 		<remap from="/occupancygrid/lidar/raw" to="/occupancygrid/velodyne/raw"/>
@@ -51,15 +50,7 @@
 		<param name="w" value="$(arg w)" type="double"/>
 		<param name="h" value="$(arg h)" type="double"/>
 	</node>
-		<!-- realsense -->
-	<!-- <node pkg="making_local_map" type="realsense_to_grid" name="realsense_localmap" ns="making_localmap"> -->
-	<!-- 	<remap from="/rm_ground" to="/realsense/obstacles"/> -->
-	<!-- 	<remap from="/ground" to="/realsense/clear"/> -->
-	<!-- 	<remap from="/occupancygrid/lidar" to="/occupancygrid/realsense"/> -->
-	<!-- 	<param name="resolution" value="$(arg resolution)" type="double"/> -->
-	<!-- 	<param name="w" value="$(arg w)" type="double"/> -->
-	<!-- 	<param name="h" value="$(arg h)" type="double"/> -->
-	<!-- </node> -->
+
 		<!-- hokuyo -->
 	<node pkg="making_local_map" type="hokuyo_raycast" name="hokuyo_localmap" ns="making_localmap">
 		<remap from="/hokuyo_points" to="/hokuyo_obstacles"/>
