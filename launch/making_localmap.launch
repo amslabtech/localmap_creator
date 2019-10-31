@@ -39,6 +39,7 @@
 	<node pkg="making_local_map" type="ground_and_obstacles_to_grid" name="velodyne_localmap" ns="making_localmap">
 		<remap from="/rm_ground" to="/velodyne_obstacles"/>
 		<remap from="/ground" to="/recognition/road_recognizer/cloud/road/stored"/>
+		<remap from="/curv" to="/recognition/road_recognizer/road_cloud_publisher/cloud/curvature"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/velodyne/filtered"/>
 		<remap from="/occupancygrid/lidar/raw" to="/occupancygrid/velodyne/raw"/>
 		<remap from="/grass_points" to="/grass_points"/>
