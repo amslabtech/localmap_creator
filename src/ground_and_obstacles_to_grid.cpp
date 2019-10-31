@@ -23,6 +23,7 @@ class OccupancyGridLidar{
 		/*subscribe*/
 		ros::Subscriber sub_rmground;
 		ros::Subscriber sub_ground;
+		ros::Subscriber sub_curv;
 		
 		/*publish*/
 		ros::Publisher pub;
@@ -32,6 +33,7 @@ class OccupancyGridLidar{
 		/*cloud*/
 		sensor_msgs::PointCloud2 grass;
 		pcl::PointCloud<pcl::PointXYZI>::Ptr rmground {new pcl::PointCloud<pcl::PointXYZI>};
+		pcl::PointCloud<pcl::PointXYZI>::Ptr curv {new pcl::PointCloud<pcl::PointXYZI>};
 		pcl::PointCloud<pcl::PointXYZINormal>::Ptr ground {new pcl::PointCloud<pcl::PointXYZINormal>};
 		pcl::PointCloud<pcl::PointXYZINormal>::Ptr grass_points {new pcl::PointCloud<pcl::PointXYZINormal>};
 		/*grid*/
@@ -62,6 +64,7 @@ class OccupancyGridLidar{
 		double range_road_intensity[2] = {ROAD_INTENSITY_MIN, ROAD_INTENSITY_MAX};
 		
 		bool first_callback_ground = true;
+		bool first_callback_curv = true;
 
 
 	public:
@@ -69,6 +72,7 @@ class OccupancyGridLidar{
 		void GridInitialization(void);
 		void CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr& msg);
 		void CallbackGround(const sensor_msgs::PointCloud2ConstPtr& msg);
+		void CallbackCurv(const sensor_msgs::PointCloud2ConstPtr& msg);
 		bool CellIsInside(nav_msgs::OccupancyGrid &grid, int x, int y);
 		void ExtractPCInRange(pcl::PointCloud<pcl::PointXYZI>::Ptr &pc);
 		void Filter(void);
@@ -104,6 +108,7 @@ OccupancyGridLidar::OccupancyGridLidar()
 
 	sub_rmground = nh.subscribe("/rm_ground", 1, &OccupancyGridLidar::CallbackRmGround, this);
 	sub_ground = nh.subscribe("/ground", 1, &OccupancyGridLidar::CallbackGround, this);
+	sub_curv = nh.subscribe("/curv", 1, &OccupancyGridLidar::CallbackCurv, this);
 	pub = nh.advertise<nav_msgs::OccupancyGrid>("/occupancygrid/lidar", 1);
 	pub_grid = nh.advertise<nav_msgs::OccupancyGrid>("/occupancygrid/lidar/raw", 1);
 	pub_grass = nh.advertise<sensor_msgs::PointCloud2>("/grass_points", 1);
@@ -197,6 +202,27 @@ void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &
 	first_callback_ground = false;
 }/*}}}*/
 
+void OccupancyGridLidar::CallbackCurv(const sensor_msgs::PointCloud2ConstPtr &msg)/*{{{*/
+{
+	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc {new pcl::PointCloud<pcl::PointXYZI>};
+	double time = ros::Time::now().toSec();
+	try{
+		pcl::fromROSMsg(*msg, *tmp_pc);
+
+		pcl_ros::transformPointCloud("/base_link", *tmp_pc, *tmp_pc, tflistener);
+		if(ros::Time::now().toSec() - time){
+			std::cout << "delay of curvcloud transform	: " 
+				<< ros::Time::now().toSec() - time << std::endl;
+		}
+	}
+	catch(tf::TransformException ex){
+		ROS_ERROR("%s",ex.what());
+	}
+	ExtractPCInRange(tmp_pc);
+	
+	pcl::copyPointCloud(*tmp_pc, *curv);
+	first_callback_curv = false;
+}/*}}}*/
 void OccupancyGridLidar::ExtractPCInRange(pcl::PointCloud<pcl::PointXYZI>::Ptr &pc)/*{{{*/
 {
 	pcl::PassThrough<pcl::PointXYZI> pass;
@@ -282,6 +308,11 @@ void OccupancyGridLidar::InputGrid(void)
 	loop_lim = rmground->points.size();
 	for(size_t i=0;i<loop_lim;i++){
 		grid.data[MeterpointToIndex(rmground->points[i].x, rmground->points[i].y)] = 100;
+	}
+	// curv
+	loop_lim = curv->points.size();
+	for(size_t i=0;i<loop_lim;i++){
+		grid.data[MeterpointToIndex(curv->points[i].x, curv->points[i].y)] = 100;
 	}
 }
 
