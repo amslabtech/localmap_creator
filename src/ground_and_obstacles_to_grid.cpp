@@ -55,7 +55,9 @@ class OccupancyGridLidar{
 		double w;	//x[m]
 		double h;	//y[m]
 		double resolution;	//[m]
+		double resolution_rec;	//[m]
 		int width;	//
+		double width_rec;	//
 		int height;	//
 		const int grass_score = 50;//
 		
@@ -108,6 +110,8 @@ OccupancyGridLidar::OccupancyGridLidar()
 	
 	width = w/resolution+1;	//
 	height = h/resolution+1;	//
+	width_rec = 1/(double)width;	//
+	resolution_rec = 1 / resolution;
 
 	sub_rmground = nh.subscribe("/rm_ground", 1, &OccupancyGridLidar::CallbackRmGround, this);
 	sub_ground = nh.subscribe("/ground", 1, &OccupancyGridLidar::CallbackGround, this);
@@ -230,6 +234,7 @@ void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &
 	ExtractPCInRange(tmp_pc);
 	std::cout << "delay of extract ground in range : " 
 		<< ros::Time::now().toSec() - time << std::endl;
+	time = ros::Time::now().toSec();
 	
 	pcl::copyPointCloud(*tmp_pc, *ground);
 	first_callback_ground = false;
@@ -351,8 +356,8 @@ void OccupancyGridLidar::InputGrid(void)
 
 int OccupancyGridLidar::MeterpointToIndex(double x, double y)
 {
-	int x_ = x/grid.info.resolution + width*0.5;
-	int y_ = y/grid.info.resolution + height*0.5;
+	int x_ = x*resolution_rec + width*0.5;
+	int y_ = y*resolution_rec + height*0.5;
 	int index = y_*width + x_;
 	return index;
 }
@@ -360,7 +365,7 @@ int OccupancyGridLidar::MeterpointToIndex(double x, double y)
 void OccupancyGridLidar::IndexToPoint(nav_msgs::OccupancyGrid &grid, int index, int& x, int& y)
 {
 	x = index%width - width*0.5;
-	y = index/width - height*0.5;
+	y = index*width_rec - height*0.5;
 }
 
 
