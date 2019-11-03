@@ -10,6 +10,7 @@
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <tf/transform_listener.h>
+#include <tf_conversions/tf_eigen.h>
 
 
 
@@ -44,11 +45,14 @@ void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud (new pcl::PointCloud<pcl::PointXYZRGB>());
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr ds_cloud {new pcl::PointCloud<pcl::PointXYZRGB>()};
 	try{
-		pcl::fromROSMsg(*msg, *pcl_cloud);
+        tf::StampedTransform transform;
+        tflistener.lookupTransform("/base_link", msg->header.frame_id, ros::Time(0), transform);
+        Eigen::Affine3d affine;
+        tf::transformTFToEigen(transform, affine);
 
 		DownsamplingBoxel(pcl_cloud,ds_cloud);
-		
-		pcl_ros::transformPointCloud("/base_link", *ds_cloud, *pcl_cloud, tflistener);
+
+        pcl::transformPointCloud(*pcl_cloud, *pcl_cloud, affine);
 
     	pcl::toROSMsg(*pcl_cloud, pc2_out);
 		pc2_out.header.frame_id = "/base_link";
@@ -57,6 +61,7 @@ void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 	}
 	catch(tf::TransformException ex){
 		ROS_ERROR("%s",ex.what());
+        return;
 	}
 }
 
@@ -64,12 +69,12 @@ void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 void PointCloudTransform::DownsamplingBoxel(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc,
 											pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc_)
 {
-	
+
 	pcl::VoxelGrid<pcl::PointXYZRGB> vg;
-   	vg.setInputCloud (pc);  
+   	vg.setInputCloud (pc);
    	vg.setLeafSize (0.1f, 0.1f, 10.0f);
     vg.filter (*pc_);
-	
+
 }
 
 int main(int argc, char** argv)
@@ -77,6 +82,6 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "downsample_vox_and_transform");
 	PointCloudTransform transform;
 	ros::spin();
-	
+
 	return 0;
 }

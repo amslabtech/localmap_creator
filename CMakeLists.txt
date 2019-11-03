@@ -12,10 +12,10 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   tf
+  tf_conversions
   cv_bridge
   image_transport
   image_geometry
-  pcl_ros
   laser_geometry
 )
 
@@ -210,62 +210,62 @@ add_definitions(${PCL_DEFINITIONS})
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 add_executable(pc_transform src/pc_transform.cpp)
-target_link_libraries(pc_transform 
+target_link_libraries(pc_transform
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
 add_executable(pc_frameid_renamer src/pc_frameid_renamer.cpp)
-target_link_libraries(pc_frameid_renamer 
+target_link_libraries(pc_frameid_renamer
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
 add_executable(all_pc_to_occupancygrid src/all_pc_to_occupancygrid.cpp)
-target_link_libraries(all_pc_to_occupancygrid 
+target_link_libraries(all_pc_to_occupancygrid
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
 add_executable(ground_and_obstacles_to_grid src/ground_and_obstacles_to_grid.cpp)
-target_link_libraries(ground_and_obstacles_to_grid 
+target_link_libraries(ground_and_obstacles_to_grid
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
 add_executable(OccupancyGrid_store src/OccupancyGrid_store.cpp)
-target_link_libraries(OccupancyGrid_store 
+target_link_libraries(OccupancyGrid_store
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
 add_executable(occupancygrid_integrate src/occupancygrid_integrate.cpp)
-target_link_libraries(occupancygrid_integrate 
+target_link_libraries(occupancygrid_integrate
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
 add_executable(hokuyo_raycast src/hokuyo_raycast.cpp)
-target_link_libraries(hokuyo_raycast 
+target_link_libraries(hokuyo_raycast
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
 add_executable(scan2pcl src/scan2pcl.cpp)
-target_link_libraries(scan2pcl 
+target_link_libraries(scan2pcl
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
 add_executable(downsample_and_transform src/downsample_and_transform.cpp)
-target_link_libraries(downsample_and_transform 
+target_link_libraries(downsample_and_transform
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
 add_executable(realsense_to_grid src/realsense_to_grid.cpp)
-target_link_libraries(realsense_to_grid 
+target_link_libraries(realsense_to_grid
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
 add_executable(realsense_object src/realsense_object.cpp)
-target_link_libraries(realsense_object 
+target_link_libraries(realsense_object
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
 add_executable(depth2point src/depth2point.cpp)
-target_link_libraries(depth2point 
+target_link_libraries(depth2point
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
@@ -276,7 +276,7 @@ if(CATKIN_ENABLE_TESTING)
     test/making_localmap.test
     test/making_localmap_test.cpp
   )
-  target_link_libraries(making_localmap_test 
+  target_link_libraries(making_localmap_test
 	${catkin_LIBRARIES}
 )
 endif()

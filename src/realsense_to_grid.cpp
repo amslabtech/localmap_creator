@@ -7,45 +7,46 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/filters/passthrough.h>
 // #include <pcl/filters/crop_box.h>
-#include <pcl/features/normal_3d.h> 
+#include <pcl/features/normal_3d.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>
 #include <pcl/point_types.h>
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
+#include <tf_conversions/tf_eigen.h>
 
 class OccupancyGridLidar{
 	private:
 		ros::NodeHandle nh;
 		ros::NodeHandle private_nh;
-		
+
 		/*subscribe*/
 		ros::Subscriber sub_rmground;
 		ros::Subscriber sub_ground;
-		
+
 		/*publish*/
 		ros::Publisher pub;
-		
+
 		/*cloud*/
 		pcl::PointCloud<pcl::PointXYZI>::Ptr rmground {new pcl::PointCloud<pcl::PointXYZI>};
 		pcl::PointCloud<pcl::PointXYZINormal>::Ptr ground {new pcl::PointCloud<pcl::PointXYZINormal>};
 		/*grid*/
 		nav_msgs::OccupancyGrid grid;
 		nav_msgs::OccupancyGrid grid_all_minusone;
-		
+
 		/*tf*/
 		tf::TransformListener tflistener;
-		
+
 		/*publish infomations*/
 		std::string pub_frameid;
 		ros::Time pub_stamp;
-		
+
 		/*const values*/
 		double w;	//x[m]
 		double h;	//y[m]
 		double resolution;	//[m]
 		// const double range_road_intensity[2] = {2, 15};
-		
+
 		bool first_callback_ground = true;
 
 
@@ -67,11 +68,11 @@ OccupancyGridLidar::OccupancyGridLidar()
 	private_nh.param("resolution", resolution, {0.1});
 	private_nh.param("w", w, {20.0});
 	private_nh.param("h", h, {20.0});
-	
+
 	std::cout << "resolution         : " << resolution << std::endl;
 	std::cout << "w                  : " << w << std::endl;
 	std::cout << "h                  : " << h << std::endl;
-	
+
 	sub_rmground = nh.subscribe("/rm_ground", 1, &OccupancyGridLidar::CallbackRmGround, this);
 	sub_ground = nh.subscribe("/ground", 1, &OccupancyGridLidar::CallbackGround, this);
 	pub = nh.advertise<nav_msgs::OccupancyGrid>("/occupancygrid/lidar", 1);
@@ -98,15 +99,20 @@ void OccupancyGridLidar::GridInitialization(void)/*{{{*/
 
 void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr &msg)/*{{{*/
 {
-	
+
 	sensor_msgs::PointCloud2 pc2_out;
+	pcl::fromROSMsg(pc2_out, *rmground);
 	try{
-		pcl_ros::transformPointCloud("/base_link", *msg, pc2_out, tflistener);
+        tf::StampedTransform transform;
+        tflistener.lookupTransform("/base_link", msg->header.frame_id, ros::Time(0), transform);
+        Eigen::Affine3d affine;
+        tf::transformTFToEigen(transform, affine);
+        pcl::transformPointCloud(*rmground, *rmground, affine);
 	}
 	catch(tf::TransformException ex){
 		ROS_ERROR("%s",ex.what());
+        return;
 	}
-	pcl::fromROSMsg(pc2_out, *rmground);
 
 	ExtractPCInRange(rmground);
 
@@ -122,15 +128,19 @@ void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &
 {
 	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc {new pcl::PointCloud<pcl::PointXYZI>};
 	sensor_msgs::PointCloud2 pc2_out;
+	pcl::fromROSMsg(pc2_out, *tmp_pc);
 	try{
-		pcl_ros::transformPointCloud("/base_link", *msg, pc2_out, tflistener);
+        tf::StampedTransform transform;
+        tflistener.lookupTransform("/base_link", msg->header.frame_id, ros::Time(0), transform);
+        Eigen::Affine3d affine;
+        tf::transformTFToEigen(transform, affine);
+        pcl::transformPointCloud(*tmp_pc, *tmp_pc, affine);
 	}
 	catch(tf::TransformException ex){
 		ROS_ERROR("%s",ex.what());
 	}
-	pcl::fromROSMsg(pc2_out, *tmp_pc);
 	ExtractPCInRange(tmp_pc);
-	
+
 	pcl::copyPointCloud(*tmp_pc, *ground);
 	first_callback_ground = false;
 }/*}}}*/
@@ -160,7 +170,7 @@ void OccupancyGridLidar::InputGrid(void)
 	// 	}else
 			grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = 0;
 	}
-	
+
 	//obstacle
 	loop_lim = rmground->points.size();
 	for(size_t i=0;i<loop_lim;i++){
@@ -187,7 +197,7 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "realsense_to_grid");
 	std::cout << "= realsense_to_grid =" << std::endl;
-	
+
 	OccupancyGridLidar occupancygrid_lidar;
 
 	ros::spin();

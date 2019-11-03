@@ -14,6 +14,7 @@
 #include <pcl/point_types.h>
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
+#include <tf_conversions/tf_eigen.h>
 
 class OccupancyGridLidar{
 	private:
@@ -164,12 +165,17 @@ void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr
 	time = ros::Time::now().toSec();
 
 	try{
-		pcl_ros::transformPointCloud("/base_link", *tmp_pc, *tmp_pc, tflistener);
+        tf::StampedTransform transform;
+        tflistener.lookupTransform("/base_link", msg->header.frame_id, ros::Time(0), transform);
+        Eigen::Affine3d affine;
+        tf::transformTFToEigen(transform, affine);
+        pcl::transformPointCloud(*tmp_pc, *tmp_pc, affine);
 		std::cout << "delay of rmground transform : "
 			<< ros::Time::now().toSec() - time << std::endl;
 	}
 	catch(tf::TransformException ex){
 		ROS_ERROR("%s",ex.what());
+        return;
 	}
 	time = ros::Time::now().toSec();
 
@@ -209,6 +215,8 @@ void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &
 	double time = ros::Time::now().toSec();
 	pcl::fromROSMsg(*msg, *tmp_pc_);
 
+	std::cout << "delay of downsampling ground: "
+		<< ros::Time::now().toSec() - time << std::endl;
 	pcl::VoxelGrid<pcl::PointXYZI> vg;
     vg.setInputCloud (tmp_pc_);
     vg.setLeafSize (0.05f, 0.05f, 100.0f);
@@ -223,12 +231,17 @@ void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &
 	time = ros::Time::now().toSec();
 
 	try{
-		pcl_ros::transformPointCloud("/base_link", *tmp_pc, *tmp_pc, tflistener);
+        tf::StampedTransform transform;
+        tflistener.lookupTransform("/base_link", msg->header.frame_id, ros::Time(0), transform);
+        Eigen::Affine3d affine;
+        tf::transformTFToEigen(transform, affine);
+        pcl::transformPointCloud(*tmp_pc, *tmp_pc, affine);
 		std::cout << "delay of ground transform	: "
 			<< ros::Time::now().toSec() - time << std::endl;
 	}
 	catch(tf::TransformException ex){
 		ROS_ERROR("%s",ex.what());
+        return;
 	}
 	time = ros::Time::now().toSec();
 	ExtractPCInRange(tmp_pc);
@@ -247,12 +260,17 @@ void OccupancyGridLidar::CallbackCurv(const sensor_msgs::PointCloud2ConstPtr &ms
 	try{
 		pcl::fromROSMsg(*msg, *tmp_pc);
 
-		pcl_ros::transformPointCloud("/base_link", *tmp_pc, *tmp_pc, tflistener);
+        tf::StampedTransform transform;
+        tflistener.lookupTransform("/base_link", msg->header.frame_id, ros::Time(0), transform);
+        Eigen::Affine3d affine;
+        tf::transformTFToEigen(transform, affine);
+        pcl::transformPointCloud(*tmp_pc, *tmp_pc, affine);
 		std::cout << "delay of curvcloud transform	: "
 			<< ros::Time::now().toSec() - time << std::endl;
 	}
 	catch(tf::TransformException ex){
 		ROS_ERROR("%s",ex.what());
+        return;
 	}
 	ExtractPCInRange(tmp_pc);
 
