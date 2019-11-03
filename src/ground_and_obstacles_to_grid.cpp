@@ -8,7 +8,7 @@
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/voxel_grid.h>
 // #include <pcl/filters/crop_box.h>
-#include <pcl/features/normal_3d.h> 
+#include <pcl/features/normal_3d.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>
 #include <pcl/point_types.h>
@@ -19,18 +19,18 @@ class OccupancyGridLidar{
 	private:
 		ros::NodeHandle nh;
 		ros::NodeHandle private_nh;
-		
+
 		/*subscribe*/
 		ros::Subscriber sub_rmground;
 		ros::Subscriber sub_ground;
 		ros::Subscriber sub_curv;
-		
+
 		/*publish*/
 		ros::Publisher pub;
 		ros::Publisher pub_grid;
 		ros::Publisher pub_grass;
 		ros::Publisher pub_downsampled_grass;
-		
+
 		/*cloud*/
 		sensor_msgs::PointCloud2 grass;
 		sensor_msgs::PointCloud2 downsampled;
@@ -43,14 +43,14 @@ class OccupancyGridLidar{
 		nav_msgs::OccupancyGrid grid;
 		nav_msgs::OccupancyGrid grid_filtered;
 		nav_msgs::OccupancyGrid grid_all_minusone;
-		
+
 		/*tf*/
 		tf::TransformListener tflistener;
-		
+
 		/*publish infomations*/
 		std::string pub_frameid;
 		ros::Time pub_stamp;
-		
+
 		/*const values*/
 		double w;	//x[m]
 		double h;	//y[m]
@@ -60,14 +60,14 @@ class OccupancyGridLidar{
 		double width_rec;	//
 		int height;	//
 		const int grass_score = 50;//
-		
-		
+
+
 		double ROAD_INTENSITY_MIN;
 		double ROAD_INTENSITY_MAX;
 		double ZEROCELL_RATIO;
 		int FILTER_RANGE;
 		double range_road_intensity[2] = {ROAD_INTENSITY_MIN, ROAD_INTENSITY_MAX};
-		
+
 		bool first_callback_ground = true;
 		bool first_callback_curv = true;
 
@@ -107,7 +107,7 @@ OccupancyGridLidar::OccupancyGridLidar()
 	std::cout << "ROAD_INTENSITY_MAX : " << ROAD_INTENSITY_MAX << std::endl;
 	std::cout << "FILTER_RANGE       : " << FILTER_RANGE << std::endl;
 	std::cout << "ZEROCELL_RATIO     : " << ZEROCELL_RATIO << std::endl;
-	
+
 	width = w/resolution+1;	//
 	height = h/resolution+1;	//
 	width_rec = 1/(double)width;	//
@@ -124,7 +124,7 @@ OccupancyGridLidar::OccupancyGridLidar()
 	range_road_intensity[1] = ROAD_INTENSITY_MAX;
 	GridInitialization();
 
-	
+
 }
 
 void OccupancyGridLidar::GridInitialization(void)/*{{{*/
@@ -148,24 +148,24 @@ void OccupancyGridLidar::GridInitialization(void)/*{{{*/
 void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr &msg)/*{{{*/
 {
 	std::cout << "=====================" << std::endl;
-	
+
 	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc_ {new pcl::PointCloud<pcl::PointXYZI>};
 	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc {new pcl::PointCloud<pcl::PointXYZI>};
 	sensor_msgs::PointCloud2 pc2_out;
 	double time = ros::Time::now().toSec();
 	pcl::fromROSMsg(*msg, *tmp_pc_);
-    
+
 	pcl::VoxelGrid<pcl::PointXYZI> vg;
-    vg.setInputCloud (tmp_pc_);  
+    vg.setInputCloud (tmp_pc_);
     vg.setLeafSize (0.05f, 0.05f, 100.0f);
     vg.filter (*tmp_pc);
-	std::cout << "delay of downsampling rm_ground : " 
+	std::cout << "delay of downsampling rm_ground : "
 		<< ros::Time::now().toSec() - time << std::endl;
 	time = ros::Time::now().toSec();
-	
+
 	try{
 		pcl_ros::transformPointCloud("/base_link", *tmp_pc, *tmp_pc, tflistener);
-		std::cout << "delay of rmground transform : " 
+		std::cout << "delay of rmground transform : "
 			<< ros::Time::now().toSec() - time << std::endl;
 	}
 	catch(tf::TransformException ex){
@@ -174,25 +174,25 @@ void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr
 	time = ros::Time::now().toSec();
 
 	ExtractPCInRange(tmp_pc);
-	std::cout << "delay of extract obstacle in range : " 
+	std::cout << "delay of extract obstacle in range : "
 		<< ros::Time::now().toSec() - time << std::endl;
 	time = ros::Time::now().toSec();
 	pcl::copyPointCloud(*tmp_pc, *rmground);
-	
+
 	pub_frameid = "/base_link";
 	pub_stamp = msg->header.stamp;
 
 	InputGrid();
-	std::cout << "delay of input grid : " 
+	std::cout << "delay of input grid : "
 		<< ros::Time::now().toSec() - time << std::endl;
 	time = ros::Time::now().toSec();
-	
+
 	grid.header.frame_id = pub_frameid;
 	grid.header.stamp = pub_stamp;
 	pub_grid.publish(grid);
-	
+
 	Filter();
-	std::cout << "delay of filter : " 
+	std::cout << "delay of filter : "
 		<< ros::Time::now().toSec() - time << std::endl;
 
 	if(!first_callback_ground){
@@ -210,10 +210,10 @@ void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &
 	pcl::fromROSMsg(*msg, *tmp_pc_);
 
 	pcl::VoxelGrid<pcl::PointXYZI> vg;
-    vg.setInputCloud (tmp_pc_);  
+    vg.setInputCloud (tmp_pc_);
     vg.setLeafSize (0.05f, 0.05f, 100.0f);
     vg.filter (*tmp_pc);
-	std::cout << "delay of downsampling ground: " 
+	std::cout << "delay of downsampling ground: "
 		<< ros::Time::now().toSec() - time << std::endl;
 	pcl::toROSMsg(*tmp_pc, downsampled);
 	pub_stamp = msg->header.stamp;
@@ -224,7 +224,7 @@ void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &
 
 	try{
 		pcl_ros::transformPointCloud("/base_link", *tmp_pc, *tmp_pc, tflistener);
-		std::cout << "delay of ground transform	: " 
+		std::cout << "delay of ground transform	: "
 			<< ros::Time::now().toSec() - time << std::endl;
 	}
 	catch(tf::TransformException ex){
@@ -232,10 +232,10 @@ void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &
 	}
 	time = ros::Time::now().toSec();
 	ExtractPCInRange(tmp_pc);
-	std::cout << "delay of extract ground in range : " 
+	std::cout << "delay of extract ground in range : "
 		<< ros::Time::now().toSec() - time << std::endl;
 	time = ros::Time::now().toSec();
-	
+
 	pcl::copyPointCloud(*tmp_pc, *ground);
 	first_callback_ground = false;
 }/*}}}*/
@@ -248,14 +248,14 @@ void OccupancyGridLidar::CallbackCurv(const sensor_msgs::PointCloud2ConstPtr &ms
 		pcl::fromROSMsg(*msg, *tmp_pc);
 
 		pcl_ros::transformPointCloud("/base_link", *tmp_pc, *tmp_pc, tflistener);
-		std::cout << "delay of curvcloud transform	: " 
+		std::cout << "delay of curvcloud transform	: "
 			<< ros::Time::now().toSec() - time << std::endl;
 	}
 	catch(tf::TransformException ex){
 		ROS_ERROR("%s",ex.what());
 	}
 	ExtractPCInRange(tmp_pc);
-	
+
 	pcl::copyPointCloud(*tmp_pc, *curv);
 	first_callback_curv = false;
 }/*}}}*/
@@ -273,7 +273,7 @@ void OccupancyGridLidar::ExtractPCInRange(pcl::PointCloud<pcl::PointXYZI>::Ptr &
 }/*}}}*/
 
 bool OccupancyGridLidar::CellIsInside(nav_msgs::OccupancyGrid &grid, int x, int y)/*{{{*/
-{   
+{
 	int w = grid.info.width;
 	int h = grid.info.height;
 	if(x<-w*0.5)  return false;
@@ -296,12 +296,12 @@ void OccupancyGridLidar::Filter(void)
 		if(grid.data[i]==grass_score){
 			int x, y;
 			IndexToPoint(grid, i, x, y);
-			int count_zerocell = 0; 
-			int count_grasscell = 0; 
+			int count_zerocell = 0;
+			int count_grasscell = 0;
 			for(int j=-FILTER_RANGE;j<=FILTER_RANGE;j++){
 				for(int k=-FILTER_RANGE;k<=FILTER_RANGE;k++){
-					if(CellIsInside(grid, x+j, y+k)){ 
-						if(grid.data[PointToIndex(grid, x+j, y+k)]==0)	
+					if(CellIsInside(grid, x+j, y+k)){
+						if(grid.data[PointToIndex(grid, x+j, y+k)]==0)
 							count_zerocell++;
 						else if(grid.data[PointToIndex(grid, x+j, y+k)]==grass_score)
 							count_grasscell++;
@@ -318,6 +318,7 @@ void OccupancyGridLidar::Filter(void)
 			}else{
 				pt.x=x*resolution;
 				pt.y=y*resolution;
+				grid_filtered.data[i] = grass_score;
 				grass_points->points.push_back(pt);
 			}
 		}
@@ -334,7 +335,7 @@ void OccupancyGridLidar::InputGrid(void)
 		// if(ground->points[i].intensity<range_road_intensity[0] ||
 		// ground->points[i].intensity>range_road_intensity[1]){
 		// 	grid.data[MeterpointToIndex(ground->points[i].x, ground->points[i].y)] = grass_score;
-		// 	
+		//
 		// }else{
 		// 	grid.data[Meterpoin
 		// }
@@ -392,7 +393,7 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "ground_and_obstacle_to_grid");
 	std::cout << "= ground_and_obstacle_to_grid =" << std::endl;
-	
+
 	OccupancyGridLidar occupancygrid_lidar;
 
 	ros::spin();

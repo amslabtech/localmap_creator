@@ -28,7 +28,7 @@
 
 
 	<!-- hokuyo -->
-	<node pkg="making_local_map" type="scan2pcl" name="scan2pcl" output="screen" ns="making_localmap">
+	<node pkg="making_local_map" type="scan2pcl" name="scan2pcl" ns="making_localmap">
 		<remap from="/scan" to="/front_laser/scan"/>
 		<remap from="/cloud" to="/hokuyo_obstacles"/>
 	</node>
