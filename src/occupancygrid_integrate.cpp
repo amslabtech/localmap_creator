@@ -113,10 +113,6 @@ void OccupancyGridCombination::CallbackGridRealsense(const nav_msgs::OccupancyGr
 	}
 
 	first_callback_grid_realsense = false;
-
-	time_pub = msg->header.stamp;
-	CombineGrids();
-	if(!grid.data.empty())	Publication();
 }
 
 void OccupancyGridCombination::CallbackGridHokuyo(const nav_msgs::OccupancyGridConstPtr& msg)
@@ -132,18 +128,14 @@ void OccupancyGridCombination::CallbackGridHokuyo(const nav_msgs::OccupancyGridC
 	}
 		
 	first_callback_grid_hokuyo = false;
-	
-	time_pub = msg->header.stamp;
-	CombineGrids();
-	if(!grid.data.empty())	Publication();
 }
 
 void OccupancyGridCombination::Expand(void)
 {
 	int loop_lim = grid.data.size();
 	double reso = grid.info.resolution;
-	double reso_inv = 1/reso;
-	int expand_range_int = int(expand_range*reso_inv);
+	double reso_rec = 1/reso;
+	int expand_range_int = int(expand_range*reso_rec);
 	int Data = 0;
 	for(size_t i=0;i<loop_lim;i++){
 		if(grid.data[i]){
