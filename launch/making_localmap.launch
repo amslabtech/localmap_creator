@@ -4,6 +4,8 @@
     <arg name="resolution" default="0.1"/>
     <arg name="w" default="20"/>
     <arg name="h" default="20"/>
+    <arg name="expand_range" default="0.4"/>
+    <arg name="zerocell_ratio" default="0.4"/>
 
 	<!-- downsampling realsense points -->
 	<!-- <node pkg="making_local_map" type="downsample_and_transform" name="downsample_and_transform" -->
@@ -45,7 +47,7 @@
 		<remap from="/grass_points" to="/grass_points"/>
 		<param name="ROAD_INTENSITY_MIN" value="1" type="double"/>
 		<param name="ROAD_INTENSITY_MAX" value="15" type="double"/>
-		<param name="ZEROCELL_RATIO" value="0.4" type="double"/>
+		<param name="ZEROCELL_RATIO" value="$(arg zerocell_ratio)"/>
 		<param name="FILTER_RANGE" value="4" type="int"/>
 		<param name="resolution" value="$(arg resolution)" type="double"/>
 		<param name="w" value="$(arg w)" type="double"/>
@@ -66,7 +68,7 @@
 		<remap from="/occupancygrid/lidar/stored" to="/occupancygrid/velodyne/filtered"/>
 		<remap from="/occupancygrid/realsense" to="/occupancygrid/realsense"/>
 		<remap from="/occupancygrid/hokuyo" to="/occupancygrid/hokuyo"/>
-		<param name="EXPAND_RANGE" value="0.3" type="double"/>
+		<param name="EXPAND_RANGE" value="$(arg expand_range)"/>
 		<param name="EXPAND_RANGE_MINI" value="0.15" type="double"/>
 	</node>
 
