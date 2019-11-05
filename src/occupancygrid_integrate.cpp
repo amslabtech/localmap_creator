@@ -144,11 +144,17 @@ void OccupancyGridCombination::Expand(void)
 			IndexToPoint(grid, i, x, y);
 			for(int j=-expand_range_int;j<=expand_range_int;j++){
 				for(int k=-expand_range_int;k<=expand_range_int;k++){
-					if(CellIsInside(grid, x+j, y+k)){ 
-						if(sqrt(j*j+k*k)*reso<=expand_range){
-							if(grid_expand.data[PointToIndex(grid, x+j,y+k)]<=Data){
-								grid_expand.data[PointToIndex(grid, x+j,y+k)] = Data;
+					if(CellIsInside(grid, x+j, y+k)){
+						double distance = sqrt((x+j)*(x+j) + (y+k)*(y+k));
+						distance *= reso;
+						if(distance >= EXPAND_RANGE || Data==100){
+							if(sqrt(j*j+k*k)*reso<=expand_range){
+								if(grid_expand.data[PointToIndex(grid, x+j,y+k)]<=Data){
+									grid_expand.data[PointToIndex(grid, x+j,y+k)] = Data;
+								}
 							}
+						}else if(grid_expand.data[PointToIndex(grid, x+j,y+k)] != 100){
+							grid_expand.data[PointToIndex(grid, x+j,y+k)] = 0;
 						}
 					}
 				}
@@ -156,6 +162,7 @@ void OccupancyGridCombination::Expand(void)
 		}
 	}
 }
+
 
 void OccupancyGridCombination::CombineGrids(void)
 {
