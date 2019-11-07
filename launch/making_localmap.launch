@@ -1,32 +1,32 @@
-
+<?xml version="1.0"?>
 <launch>
 	<!-- params -->
     <arg name="resolution" default="0.1"/>
     <arg name="w" default="20"/>
     <arg name="h" default="20"/>
-    <arg name="expand_range" default="0.4"/>
+    <arg name="expand_range" default="0.5"/>
     <arg name="zerocell_ratio" default="0.4"/>
 
 	<!-- downsampling realsense points -->
-	<!-- <node pkg="making_local_map" type="downsample_and_transform" name="downsample_and_transform" -->
-	<!-- 	ns="making_localmap"> -->
-	<!-- 	<remap from="/cloud" to="/camera/depth_registered/points"/> -->
-	<!-- 	<remap from="/cloud/downsampled" to="/realsense/downsampled"/> -->
-	<!-- </node> -->
-	<!-- <node pkg="making_local_map" type="realsense_object" name="realsense_obstacle" ns="making_localmap"> -->
-	<!-- 	<remap from="/cloud" to="/realsense/downsampled"/> -->
-	<!-- 	<remap from="/cloud/curv" to="/realsense/obstacles"/> -->
-	<!-- 	<remap from="/cloud/plane" to="/realsense/clear"/> -->
-	<!-- 	<param name="UPPER_LIMIT" value="0.1" type="double"/> -->
-	<!-- 	<param name="UNDER_LIMIT" value="&#45;0.05" type="double"/> -->
-	<!-- 	<param name="VIEW_RANGE_X_MIN" value="0.3" type="double"/> -->
-	<!-- 	<param name="VIEW_RANGE_X_MAX" value="1.2" type="double"/> -->
-	<!-- 	<param name="VIEW_RANGE_Y_MIN" value="&#45;0.8" type="double"/> -->
-	<!-- 	<param name="VIEW_RANGE_Y_MAX" value="0.8" type="double"/> -->
-	<!-- 	<param name="VIEW_RANGE_Z_MIN" value="&#45;0.5" type="double"/> -->
-	<!-- 	<param name="VIEW_RANGE_Z_MAX" value="0.5" type="double"/> -->
-	<!-- 	 -->
-	<!-- </node> -->
+	<node pkg="making_local_map" type="downsample_and_transform" name="downsample_and_transform"
+		ns="making_localmap">
+		<remap from="/cloud" to="/camera/depth_registered/points"/>
+		<remap from="/cloud/downsampled" to="/realsense/downsampled"/>
+	</node>
+	<node pkg="making_local_map" type="realsense_object" name="realsense_obstacle" ns="making_localmap">
+		<remap from="/cloud" to="/realsense/downsampled"/>
+		<remap from="/cloud/curv" to="/realsense/obstacles"/>
+		<remap from="/cloud/plane" to="/realsense/clear"/>
+		<param name="UPPER_LIMIT" value="0.2" type="double"/>
+		<param name="UNDER_LIMIT" value="-0.5" type="double"/>
+		<param name="VIEW_RANGE_X_MIN" value="0.3" type="double"/>
+		<param name="VIEW_RANGE_X_MAX" value="1.2" type="double"/>
+		<param name="VIEW_RANGE_Y_MIN" value="-0.8" type="double"/>
+		<param name="VIEW_RANGE_Y_MAX" value="0.8" type="double"/>
+		<param name="VIEW_RANGE_Z_MIN" value="-0.5" type="double"/>
+		<param name="VIEW_RANGE_Z_MAX" value="0.5" type="double"/>
+
+	</node>
 
 
 	<!-- hokuyo -->
@@ -58,6 +58,14 @@
 	<node pkg="making_local_map" type="hokuyo_raycast" name="hokuyo_localmap" ns="making_localmap">
 		<remap from="/hokuyo_points" to="/hokuyo_obstacles"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/hokuyo"/>
+		<param name="resolution" value="$(arg resolution)" type="double"/>
+		<param name="w" value="$(arg w)" type="double"/>
+		<param name="h" value="$(arg h)" type="double"/>
+	</node>
+
+	<node pkg="making_local_map" type="hokuyo_raycast" name="realsense_localmap" ns="making_localmap">
+        <remap from="/hokuyo_points" to="/realsense/obstacles"/>
+		<remap from="/occupancygrid/lidar" to="/occupancygrid/realsense"/>
 		<param name="resolution" value="$(arg resolution)" type="double"/>
 		<param name="w" value="$(arg w)" type="double"/>
 		<param name="h" value="$(arg h)" type="double"/>

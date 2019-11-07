@@ -61,15 +61,15 @@ OccupancyGridCombination::OccupancyGridCombination()
 	expand_range = EXPAND_RANGE;
 
 
-	sub_grid_lidar = nh.subscribe("/occupancygrid/lidar/stored", 1, 
+	sub_grid_lidar = nh.subscribe("/occupancygrid/lidar/stored", 1,
 			&OccupancyGridCombination::CallbackGridLidar, this);
-	sub_grid_realsense = nh.subscribe("/occupancygrid/realsense", 1, 
+	sub_grid_realsense = nh.subscribe("/occupancygrid/realsense", 1,
 			&OccupancyGridCombination::CallbackGridRealsense, this);
-	sub_grid_hokuyo = nh.subscribe("/occupancygrid/hokuyo", 1, 
+	sub_grid_hokuyo = nh.subscribe("/occupancygrid/hokuyo", 1,
 			&OccupancyGridCombination::CallbackGridHokuyo, this);
-	sub_expand_flag = nh.subscribe("/expand_minimize_flag", 1, 
+	sub_expand_flag = nh.subscribe("/expand_minimize_flag", 1,
 			&OccupancyGridCombination::CallbackExpandFlag, this);
-	
+
 	pub = nh.advertise<nav_msgs::OccupancyGrid>("/local_map",1);
 	pub_expand = nh.advertise<nav_msgs::OccupancyGrid>("/local_map/expand",1);
 }
@@ -77,14 +77,14 @@ OccupancyGridCombination::OccupancyGridCombination()
 void OccupancyGridCombination::CallbackExpandFlag(const std_msgs::BoolConstPtr& msg)
 {
 	expand_minimize_flag = msg->data;
-	std::cout << "ExpandFlag : " << expand_minimize_flag << std::endl;	
+	std::cout << "ExpandFlag : " << expand_minimize_flag << std::endl;
 	expand_range = EXPAND_RANGE;
-	if(expand_minimize_flag)expand_range = EXPAND_RANGE_MINI; 
+	if(expand_minimize_flag)expand_range = EXPAND_RANGE_MINI;
 }
 
 void OccupancyGridCombination::CallbackGridLidar(const nav_msgs::OccupancyGridConstPtr& msg)
 {
-	// std::cout<<"CallbackGridLidar"<<std::endl;	
+	// std::cout<<"CallbackGridLidar"<<std::endl;
 	grid_lidar = *msg;
 
 	if(first_callback_grid_lidar && first_callback_grid_realsense && first_callback_grid_hokuyo){
@@ -102,9 +102,9 @@ void OccupancyGridCombination::CallbackGridLidar(const nav_msgs::OccupancyGridCo
 
 void OccupancyGridCombination::CallbackGridRealsense(const nav_msgs::OccupancyGridConstPtr& msg)
 {
-	// std::cout<<"CallbackGridRealsense"<<std::endl;	
+	// std::cout<<"CallbackGridRealsense"<<std::endl;
 	grid_realsense = *msg;
-	
+
 	if(first_callback_grid_lidar && first_callback_grid_realsense && first_callback_grid_hokuyo){
 		grid = *msg;
 		grid_expand =*msg;
@@ -117,7 +117,7 @@ void OccupancyGridCombination::CallbackGridRealsense(const nav_msgs::OccupancyGr
 
 void OccupancyGridCombination::CallbackGridHokuyo(const nav_msgs::OccupancyGridConstPtr& msg)
 {
-	// std::cout<<"CallbackGridHokuyo"<<std::endl;	
+	// std::cout<<"CallbackGridHokuyo"<<std::endl;
 	grid_hokuyo = *msg;
 
 	if(first_callback_grid_lidar && first_callback_grid_realsense && first_callback_grid_hokuyo){
@@ -126,7 +126,7 @@ void OccupancyGridCombination::CallbackGridHokuyo(const nav_msgs::OccupancyGridC
 		size_t loop_lim = grid_hokuyo.data.size();
 		for(size_t i=0;i<loop_lim;i++)	grid.data[i] = -1;
 	}
-		
+
 	first_callback_grid_hokuyo = false;
 }
 
@@ -169,10 +169,10 @@ void OccupancyGridCombination::CombineGrids(void)
 	size_t loop_lim = grid.data.size();
 	for(size_t i=0;i<loop_lim;i++){
 		if(!first_callback_grid_lidar)grid.data[i] = grid_lidar.data[i];
-		if(!first_callback_grid_realsense && grid_realsense.data[i]!=-1) grid.data[i] = grid_realsense.data[i];
+		if(!first_callback_grid_realsense && grid_realsense.data[i]==100) grid.data[i] = grid_realsense.data[i];
 		if(!first_callback_grid_hokuyo && grid.data[i]<=0) grid.data[i] = grid_hokuyo.data[i];
 	}
-	
+
 	for(size_t i=0;i<loop_lim;i++){
 		grid_expand.data[i] = grid.data[i];
 	}
@@ -194,7 +194,7 @@ int OccupancyGridCombination::PointToIndex(nav_msgs::OccupancyGrid &grid, int x,
 }
 
 bool OccupancyGridCombination::CellIsInside(nav_msgs::OccupancyGrid &grid, int x, int y)
-{   
+{
 	int w = grid.info.width;
 	int h = grid.info.height;
 	if(x<-w*0.5)  return false;
@@ -207,7 +207,7 @@ bool OccupancyGridCombination::CellIsInside(nav_msgs::OccupancyGrid &grid, int x
 
 void OccupancyGridCombination::Publication(void)
 {
-	// std::cout<<"Publication"<<std::endl;	
+	// std::cout<<"Publication"<<std::endl;
 	grid.header.stamp = time_pub;
 	grid_expand.header.stamp = time_pub;
 	pub.publish(grid);

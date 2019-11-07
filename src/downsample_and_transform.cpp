@@ -44,17 +44,16 @@ void PointCloudTransform::Callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 	sensor_msgs::PointCloud2 pc2_out;
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud (new pcl::PointCloud<pcl::PointXYZRGB>());
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr ds_cloud {new pcl::PointCloud<pcl::PointXYZRGB>()};
+    pcl::fromROSMsg(*msg, *pcl_cloud);
 	try{
         tf::StampedTransform transform;
         tflistener.lookupTransform("/base_link", msg->header.frame_id, ros::Time(0), transform);
         Eigen::Affine3d affine;
         tf::transformTFToEigen(transform, affine);
-
+        pcl::transformPointCloud(*pcl_cloud, *pcl_cloud, affine);
 		DownsamplingBoxel(pcl_cloud,ds_cloud);
 
-        pcl::transformPointCloud(*pcl_cloud, *pcl_cloud, affine);
-
-    	pcl::toROSMsg(*pcl_cloud, pc2_out);
+    	pcl::toROSMsg(*ds_cloud, pc2_out);
 		pc2_out.header.frame_id = "/base_link";
 		pc2_out.header.stamp = msg->header.stamp;
 		pub.publish(pc2_out);
@@ -72,7 +71,7 @@ void PointCloudTransform::DownsamplingBoxel(pcl::PointCloud<pcl::PointXYZRGB>::P
 
 	pcl::VoxelGrid<pcl::PointXYZRGB> vg;
    	vg.setInputCloud (pc);
-   	vg.setLeafSize (0.1f, 0.1f, 10.0f);
+   	vg.setLeafSize (0.1f, 0.1f, 0.1f);
     vg.filter (*pc_);
 
 }

@@ -21,7 +21,7 @@ class PointCloudTransform{
 		ros::Subscriber sub;
 		ros::Publisher pub_curv;
 		ros::Publisher pub_plane;
-		
+
 		sensor_msgs::PointCloud pc_;
 		sensor_msgs::PointCloud2 curv;
 		sensor_msgs::PointCloud2 plane;
@@ -108,7 +108,7 @@ void PointCloudTransform::Passthrough(void)
 	pass.setInputCloud(pcl_cloud);
 	pass.setFilterLimits(UNDER_LIMIT, UPPER_LIMIT);
 	pass.filter(*plane_cloud);
-	
+
 	pass.setFilterLimitsNegative(true);
 	pass.setInputCloud(pcl_cloud);
 	pass.setFilterLimits(UNDER_LIMIT, UPPER_LIMIT);
@@ -121,6 +121,6 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "realsense_object");
 	PointCloudTransform transform;
 	ros::spin();
-	
+
 	return 0;
 }
