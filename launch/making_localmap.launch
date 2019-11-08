@@ -6,6 +6,7 @@
     <arg name="h" default="20"/>
     <arg name="expand_range" default="0.5"/>
     <arg name="zerocell_ratio" default="0.4"/>
+    <arg name="zerocell_ratio_grassy" default="0.2"/>
 
 	<!-- downsampling realsense points -->
 	<node pkg="making_local_map" type="downsample_and_transform" name="downsample_and_transform"
@@ -48,6 +49,7 @@
 		<param name="ROAD_INTENSITY_MIN" value="1" type="double"/>
 		<param name="ROAD_INTENSITY_MAX" value="15" type="double"/>
 		<param name="ZEROCELL_RATIO" value="$(arg zerocell_ratio)"/>
+		<param name="ZEROCELL_RATIO_grassy" value="$(arg zerocell_ratio_grassy)"/>
 		<param name="FILTER_RANGE" value="4" type="int"/>
 		<param name="resolution" value="$(arg resolution)" type="double"/>
 		<param name="w" value="$(arg w)" type="double"/>
