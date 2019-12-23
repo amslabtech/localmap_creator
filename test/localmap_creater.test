@@ -35,6 +35,6 @@
 		<remap from="/occupancygrid/hokuyo" to="/occupancygrid/hokuyo"/>
 	</node>
 
-	<test pkg="localmap_creater" type="making_localmap_test" test-name="making_localmap_test"/> 
+	<test pkg="localmap_creater" type="localmap_creater_test" test-name="localmap_creater_test"/> 
 
 </launch>
