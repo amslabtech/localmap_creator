@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(making_local_map)
+project(localmap_creater)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
@@ -112,7 +112,7 @@ find_package(PCL 1.8 REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES making_local_map
+#  LIBRARIES localmap_creater
 #  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
@@ -134,7 +134,7 @@ add_definitions(${PCL_DEFINITIONS})
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/making_local_map.cpp
+#   src/${PROJECT_NAME}/localmap_creater.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -145,7 +145,7 @@ add_definitions(${PCL_DEFINITIONS})
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/making_local_map_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/localmap_creater_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -202,35 +202,15 @@ add_definitions(${PCL_DEFINITIONS})
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_making_local_map.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_localmap_creater.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-add_executable(pc_transform src/pc_transform.cpp)
-target_link_libraries(pc_transform
-	${catkin_LIBRARIES}
-  	${PCL_LIBRARIES}
-)
-add_executable(pc_frameid_renamer src/pc_frameid_renamer.cpp)
-target_link_libraries(pc_frameid_renamer
-	${catkin_LIBRARIES}
-  	${PCL_LIBRARIES}
-)
-add_executable(all_pc_to_occupancygrid src/all_pc_to_occupancygrid.cpp)
-target_link_libraries(all_pc_to_occupancygrid
-	${catkin_LIBRARIES}
-  	${PCL_LIBRARIES}
-)
 add_executable(ground_and_obstacles_to_grid src/ground_and_obstacles_to_grid.cpp)
 target_link_libraries(ground_and_obstacles_to_grid
-	${catkin_LIBRARIES}
-  	${PCL_LIBRARIES}
-)
-add_executable(OccupancyGrid_store src/OccupancyGrid_store.cpp)
-target_link_libraries(OccupancyGrid_store
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
@@ -264,19 +244,14 @@ target_link_libraries(realsense_object
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
-add_executable(depth2point src/depth2point.cpp)
-target_link_libraries(depth2point
-	${catkin_LIBRARIES}
-  	${PCL_LIBRARIES}
-)
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
-  add_rostest_gtest(making_localmap_test
-    test/making_localmap.test
-    test/making_localmap_test.cpp
+  add_rostest_gtest(localmap_creater_test
+    test/localmap_creater.test
+    test/localmap_creater_test.cpp
   )
-  target_link_libraries(making_localmap_test
+  target_link_libraries(localmap_creater_test
 	${catkin_LIBRARIES}
 )
 endif()

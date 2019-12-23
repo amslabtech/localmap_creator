@@ -12,7 +12,7 @@ int main(int argc, char** argv)
 {
 	testing::InitGoogleTest(&argc, argv);
 
-	ros::init(argc, argv, "making_localmap_test");
+	ros::init(argc, argv, "localmap_creater_test");
 
 	ros::AsyncSpinner spinner(1);
 	spinner.start();

@@ -9,12 +9,12 @@
     <arg name="zerocell_ratio_grassy" default="0.2"/>
 
 	<!-- downsampling realsense points -->
-	<node pkg="making_local_map" type="downsample_and_transform" name="downsample_and_transform"
-		ns="making_localmap">
+	<node pkg="localmap_creater" type="downsample_and_transform" name="downsample_and_transform"
+		ns="localmap_creater">
 		<remap from="/cloud" to="/camera/depth_registered/points"/>
 		<remap from="/cloud/downsampled" to="/realsense/downsampled"/>
 	</node>
-	<node pkg="making_local_map" type="realsense_object" name="realsense_obstacle" ns="making_localmap">
+	<node pkg="localmap_creater" type="realsense_object" name="realsense_obstacle" ns="localmap_creater">
 		<remap from="/cloud" to="/realsense/downsampled"/>
 		<remap from="/cloud/curv" to="/realsense/obstacles"/>
 		<remap from="/cloud/plane" to="/realsense/clear"/>
@@ -31,7 +31,7 @@
 
 
 	<!-- hokuyo -->
-	<node pkg="making_local_map" type="scan2pcl" name="scan2pcl" ns="making_localmap">
+	<node pkg="localmap_creater" type="scan2pcl" name="scan2pcl" ns="localmap_creater">
 		<remap from="/scan" to="/front_laser/scan"/>
 		<remap from="/cloud" to="/hokuyo_obstacles"/>
 	</node>
@@ -39,7 +39,7 @@
 
 	<!-- make each occupancygrid -->
 		<!-- velodyne -->
-	<node pkg="making_local_map" type="ground_and_obstacles_to_grid" name="velodyne_localmap" ns="making_localmap">
+	<node pkg="localmap_creater" type="ground_and_obstacles_to_grid" name="velodyne_localmap" ns="localmap_creater">
 		<remap from="/rm_ground" to="/velodyne_obstacles"/>
 		<remap from="/ground" to="/recognition/road_recognizer/cloud/road/stored"/>
 		<remap from="/curv" to="/recognition/road_recognizer/road_cloud_publisher/cloud/curvature"/>
@@ -57,7 +57,7 @@
 	</node>
 
 		<!-- hokuyo -->
-	<node pkg="making_local_map" type="hokuyo_raycast" name="hokuyo_localmap" ns="making_localmap">
+	<node pkg="localmap_creater" type="hokuyo_raycast" name="hokuyo_localmap" ns="localmap_creater">
 		<remap from="/hokuyo_points" to="/hokuyo_obstacles"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/hokuyo"/>
 		<param name="resolution" value="$(arg resolution)" type="double"/>
@@ -65,7 +65,7 @@
 		<param name="h" value="$(arg h)" type="double"/>
 	</node>
 
-	<node pkg="making_local_map" type="hokuyo_raycast" name="realsense_localmap" ns="making_localmap">
+	<node pkg="localmap_creater" type="hokuyo_raycast" name="realsense_localmap" ns="localmap_creater">
         <remap from="/hokuyo_points" to="/realsense/obstacles"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/realsense"/>
 		<param name="resolution" value="$(arg resolution)" type="double"/>
@@ -74,7 +74,7 @@
 	</node>
 
 	<!-- integrate localmap -->
-	<node pkg="making_local_map" type="occupancygrid_integrate" name="occupancygrid_integrate" ns="making_localmap">
+	<node pkg="localmap_creater" type="occupancygrid_integrate" name="occupancygrid_integrate" ns="localmap_creater">
 		<remap from="/occupancygrid/lidar/stored" to="/occupancygrid/velodyne/filtered"/>
 		<remap from="/occupancygrid/realsense" to="/occupancygrid/realsense"/>
 		<remap from="/occupancygrid/hokuyo" to="/occupancygrid/hokuyo"/>

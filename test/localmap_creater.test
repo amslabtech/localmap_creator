@@ -3,7 +3,7 @@
 	<include file="$(find amsl_navigation_managers)/launch/amsl_navigation_managers.launch"/>
 
 	<!-- hokuyo -->
-	<node pkg="making_local_map" type="scan2pcl" name="scan2pcl" output="screen">
+	<node pkg="localmap_creater" type="scan2pcl" name="scan2pcl" output="screen">
 		<remap from="/scan" to="/front_lasr/scan"/>
 		<remap from="/cloud" to="/hokuyo_obstacles"/>
 	</node>
@@ -11,30 +11,30 @@
 
 	<!-- make each occupancygrid -->
 		<!-- velodyne -->
-	<node pkg="making_local_map" type="ground_and_obstacles_to_grid" name="velodyne_localmap">
+	<node pkg="localmap_creater" type="ground_and_obstacles_to_grid" name="velodyne_localmap">
 		<remap from="/rm_ground" to="/velodyne_obstacles"/>
 		<remap from="/ground" to="/velodyne_clear"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/velodyne"/>
 	</node>
 		<!-- realsense -->
-	<node pkg="making_local_map" type="ground_and_obstacles_to_grid" name="realsense_localmap">
+	<node pkg="localmap_creater" type="ground_and_obstacles_to_grid" name="realsense_localmap">
 		<remap from="/rm_ground" to="/realsense_obstacles"/>
 		<remap from="/ground" to="/realsense_clear"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/realsense"/>
 	</node>
 		<!-- hokuyo -->
-	<node pkg="making_local_map" type="hokuyo_raycast" name="hokuyo_localmap">
+	<node pkg="localmap_creater" type="hokuyo_raycast" name="hokuyo_localmap">
 		<remap from="/hokuyo_points" to="/hokuyo_obstacles"/>
 		<remap from="/occupancygrid/lidar" to="/occupancygrid/hokuyo"/>
 	</node>
 
 	<!-- integrate localmap -->
-	<node pkg="making_local_map" type="occupancygrid_integrate" name="occupancygrid_integrate">
+	<node pkg="localmap_creater" type="occupancygrid_integrate" name="occupancygrid_integrate">
 		<remap from="/occupancygrid/lidar/stored" to="/occupancygrid/velodyne"/>
 		<remap from="/occupancygrid/realsense" to="/occupancygrid/realsense"/>
 		<remap from="/occupancygrid/hokuyo" to="/occupancygrid/hokuyo"/>
 	</node>
 
-	<test pkg="making_local_map" type="making_localmap_test" test-name="making_localmap_test"/> 
+	<test pkg="localmap_creater" type="making_localmap_test" test-name="making_localmap_test"/> 
 
 </launch>
