@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(localmap_creater)
+ cmake_minimum_required(VERSION 2.8.3)
+project(localmap_creator)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
@@ -112,7 +112,7 @@ find_package(PCL 1.8 REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES localmap_creater
+#  LIBRARIES localmap_creator
 #  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
@@ -134,7 +134,7 @@ add_definitions(${PCL_DEFINITIONS})
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/localmap_creater.cpp
+#   src/${PROJECT_NAME}/localmap_creator.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -145,7 +145,7 @@ add_definitions(${PCL_DEFINITIONS})
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/localmap_creater_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/localmap_creator_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -202,7 +202,7 @@ add_definitions(${PCL_DEFINITIONS})
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_localmap_creater.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_localmap_creator.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
@@ -247,11 +247,11 @@ target_link_libraries(realsense_object
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
-  add_rostest_gtest(localmap_creater_test
-    test/localmap_creater.test
-    test/localmap_creater_test.cpp
+  add_rostest_gtest(localmap_creator_test
+    test/localmap_creator.test
+    test/localmap_creator_test.cpp
   )
-  target_link_libraries(localmap_creater_test
+  target_link_libraries(localmap_creator_test
 	${catkin_LIBRARIES}
 )
 endif()
