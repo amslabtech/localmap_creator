@@ -125,7 +125,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
@@ -245,6 +245,13 @@ target_link_libraries(realsense_object
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
+
+add_executable(simple_localmap_creator src/simple_localmap_creator.cpp)
+target_link_libraries(simple_localmap_creator
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+)
+add_dependencies(simple_localmap_creator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
