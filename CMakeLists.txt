@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf_conversions
   tf2
+  tf2_geometry_msgs
   cv_bridge
   image_transport
   image_geometry
