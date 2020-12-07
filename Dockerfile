@@ -1,46 +1,31 @@
-FROM osrf/ros:melodic-desktop
+ARG ros_distro=melodic
+FROM ros:${ros_distro}-ros-base
 
-RUN apt-get update
+SHELL ["/bin/bash", "-c"]
 
-RUN apt-get install -y sudo \
-                       wget \
-                       lsb-release \
-                       mesa-utils \
-                       python-pip \
-                       ros-melodic-pcl-ros \
-                       libpcl-dev
-
-RUN apt-get install -y ros-melodic-pcl* \
-                       libpcl-dev \
-                       ros-melodic-image-geometry
-
-RUN apt-get update
-
-WORKDIR /root
+ENV DEBIAN_FRONTEND noninteractive
 
 # ROS setting
-RUN /bin/bash -c "mkdir -p catkin_ws/src"
+ARG ros_distro
+ENV ROS_DISTRO=${ros_distro}
+RUN mkdir -p catkin_ws/src
 
-RUN cd catkin_ws/src && /bin/bash -c "source /opt/ros/melodic/setup.bash; catkin_init_workspace"
+RUN cd catkin_ws/src && \
+    source /opt/ros/${ROS_DISTRO}/setup.bash && \
+    catkin_init_workspace
 
-RUN cd catkin_ws && /bin/bash -c "source /opt/ros/melodic/setup.bash; catkin_make"
+COPY . /root/catkin_ws/src/repo
 
-RUN cd /root && echo source /root/catkin_ws/devel/setup.bash >> .bashrc
+RUN cd /root/catkin_ws && \
+    apt-get update && \
+    rosdep update && \
+    rosdep install -i -r -y --from-paths src && \
+    source /opt/ros/${ROS_DISTRO}/setup.bash && \
+    catkin_make -DCMAKE_BUILD_TYPE=Release
 
-ENV ROS_PACKAGE_PATH=/root/catkin_ws:$ROS_PACKAGE_PATH
+RUN echo 'source /opt/ros/${ROS_DISTRO}/setup.bash && source /root/catkin_ws/devel/setup.bash && exec "$@"' \
+    > /root/ros_entrypoint.sh
 
-ENV ROS_WORKSPACE=/root/catkin_ws
+WORKDIR /root/catkin_ws
 
-RUN ln -sf /usr/include/eigen3/Eigen /usr/include/Eigen
-
-RUN apt clean \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN pip install pyyaml
-
-# clone repository
-WORKDIR /root
-
-# dependencies
-RUN cd catkin_ws/src && git clone https://github.com/amslabtech/amsl_navigation_managers --depth=1
-RUN cd catkin_ws/src && git clone https://github.com/amslabtech/node_edge_localizer --depth=1
+ENTRYPOINT ["bash", "/root/ros_entrypoint.sh"]
