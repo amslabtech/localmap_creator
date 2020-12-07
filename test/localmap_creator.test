@@ -1,7 +1,5 @@
 <launch>
 
-	<include file="$(find amsl_navigation_managers)/launch/amsl_navigation_managers.launch"/>
-
 	<!-- hokuyo -->
 	<node pkg="localmap_creator" type="scan2pcl" name="scan2pcl" output="screen">
 		<remap from="/scan" to="/front_lasr/scan"/>
@@ -35,6 +33,6 @@
 		<remap from="/occupancygrid/hokuyo" to="/occupancygrid/hokuyo"/>
 	</node>
 
-	<test pkg="localmap_creator" type="localmap_creator_test" test-name="localmap_creator_test"/> 
+	<test pkg="localmap_creator" type="localmap_creator_test" test-name="localmap_creator_test"/>
 
 </launch>
