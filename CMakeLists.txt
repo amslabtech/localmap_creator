@@ -136,9 +136,9 @@ link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/localmap_creator.cpp
-# )
+add_library(hokuyo_raycast_lib
+  src/hokuyo_raycast.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -222,10 +222,11 @@ target_link_libraries(occupancygrid_integrate
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
-add_executable(hokuyo_raycast src/hokuyo_raycast.cpp)
+add_executable(hokuyo_raycast src/hokuyo_raycast_node.cpp)
 target_link_libraries(hokuyo_raycast
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
+    hokuyo_raycast_lib
 )
 add_executable(scan2pcl src/scan2pcl.cpp)
 target_link_libraries(scan2pcl

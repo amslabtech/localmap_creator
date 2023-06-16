@@ -1,138 +1,72 @@
-#include <ros/ros.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <nav_msgs/OccupancyGrid.h>
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-#include <pcl_conversions/pcl_conversions.h>
-#include <pcl/filters/passthrough.h>
-// #include <pcl/filters/crop_box.h>
-#include <pcl/features/normal_3d.h>
-#include <tf/tf.h>
+#include "localmap_creator/hokuyo_raycast.h"
 
-class OccupancyGridLidar{
-	private:
-		ros::NodeHandle nh;
-		ros::NodeHandle private_nh;
-		/*subscribe*/
-		ros::Subscriber sub;
-		/*publish*/
-		ros::Publisher pub;
-		/*cloud*/
-		pcl::PointCloud<pcl::PointXYZI>::Ptr rmground {new pcl::PointCloud<pcl::PointXYZI>};
-		/*grid*/
-		nav_msgs::OccupancyGrid grid;
-		nav_msgs::OccupancyGrid grid_all_zero;
-		/*publish infomations*/
-		std::string pub_frameid;
-		ros::Time pub_stamp;
-		/*const values*/
-		double w;	//x[m]
-		double h;	//y[m]
-		double resolution;	//[m]
-		// const double range_road_intensity[2] = {5, 15};
-	public:
-		OccupancyGridLidar();
-		void GridInitialization(void);
-		void CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr& msg);
-		void CallbackGround(const sensor_msgs::PointCloud2ConstPtr& msg);
-		void ExtractPCInRange(pcl::PointCloud<pcl::PointXYZI>::Ptr& pc);
-		void InputGrid(void);
-		int MeterpointToIndex(double x, double y);
-		void Publication(void);
-};
-
-
-OccupancyGridLidar::OccupancyGridLidar()
-	: private_nh("~")
+namespace hokuyo_raycast
 {
-	private_nh.param("resolution", resolution, {0.1});
-	private_nh.param("w", w, {20.0});
-	private_nh.param("h", h, {20.0});
-	
-	std::cout << "resolution : " << resolution << std::endl;
-	std::cout << "w          : " << w << std::endl;
-	std::cout << "h          : " << h << std::endl;
+    OccupancyGridLidar::OccupancyGridLidar(ros::NodeHandle &nh, ros::NodeHandle &private_nh)
+    {
+        private_nh.param("hz", param_.hz, 10);
+        private_nh.param("map_width", param_.map_width, 20.0);
+        private_nh.param("map_height", param_.map_height, 20.0);
+        private_nh.param("map_resolution", param_.map_resolution, 1.0);
 
-	sub = nh.subscribe("/hokuyo_points", 1, &OccupancyGridLidar::CallbackRmGround, this);
-	pub = nh.advertise<nav_msgs::OccupancyGrid>("/occupancygrid/lidar", 1);
-	GridInitialization();
-}
+        pub = nh.advertise<nav_msgs::OccupancyGrid>("/OccupancyGridLidar/Lidar", 1);
+    }
 
-void OccupancyGridLidar::GridInitialization(void)/*{{{*/
-{
-	grid.info.resolution = resolution;
-	grid.info.width = w/resolution + 1;
-	grid.info.height = h/resolution + 1;
-	grid.info.origin.position.x = -w*0.5;
-	grid.info.origin.position.y = -h*0.5;
-	grid.info.origin.position.z = 0.0;
-	grid.info.origin.orientation.x = 0.0;
-	grid.info.origin.orientation.y = 0.0;
-	grid.info.origin.orientation.z = 0.0;
-	grid.info.origin.orientation.w = 1.0;
-	int loop_lim = grid.info.width*grid.info.height;
-	for(int i=0;i<loop_lim;i++)	grid.data.push_back(0);
-	// frame_id is same as the one of subscribed pc
-	grid_all_zero = grid;
-}/*}}}*/
+    void OccupancyGridLidar::grid_initialization()
+    {
+        grid.info.resolution = param_.map_resolution;
+        grid.info.width = param_.map_width / param_.map_resolution;
+        grid.info.height = param_.map_height / param_.map_resolution;
+        grid.info.origin.position.x = -param_.map_width / 2.0;
+        grid.info.origin.position.y = -param_.map_height / 2.0;
+        grid.info.origin.position.z = 0.0;
+        grid.info.origin.orientation.x = 0.0;
+        grid.info.origin.orientation.y = 0.0;
+        grid.info.origin.orientation.z = 0.0;
+    }
 
-void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr &msg)/*{{{*/
-{
-	pcl::fromROSMsg(*msg, *rmground);
+    void OccupancyGridLidar::init_map()
+    {
+        grid.data.clear();
 
-	ExtractPCInRange(rmground);
+        const int size = grid.info.width * grid.info.height;
+        for(int i=0; i<size; i++)
+        {
+            grid.data.push_back(-1);
+        }
+    }
 
-	pub_frameid = msg->header.frame_id;
-	pub_stamp = msg->header.stamp;
+    void OccupancyGridLidar::input_grid()
+    {
+        size_t loop_lim = rmground->points.size();
 
-	InputGrid();
-	Publication();
-}/*}}}*/
+        for(size_t i=0; i<loop_lim; i++)
+        {
+            const int grid_index = xy_to_index();
+        }
 
-void OccupancyGridLidar::ExtractPCInRange(pcl::PointCloud<pcl::PointXYZI>::Ptr& pc)/*{{{*/
-{
-	pcl::PassThrough<pcl::PointXYZI> pass;
-	pass.setInputCloud(pc);
-	pass.setFilterFieldName("x");
-	pass.setFilterLimits(-w*0.5, w*0.5);
-	pass.filter(*pc);
-	pass.setInputCloud(pc);
-	pass.setFilterFieldName("y");
-	pass.setFilterLimits(-h*0.5, h*0.5);
-	pass.filter(*pc);
-}/*}}}*/
+    }
 
-void OccupancyGridLidar::InputGrid(void)
-{
-	grid = grid_all_zero;
-	//obstacle
-	size_t loop_lim = rmground->points.size();
-	for(size_t i=0;i<loop_lim;i++){
-		grid.data[MeterpointToIndex(rmground->points[i].x, rmground->points[i].y)] = 100;
-	}
-}
+    int OccupancyGridLidar::xy_to_index(double x, double y)
+    {
+        int x_ = x/grid.info.resolution + grid.info.width/2;
+    }
 
-int OccupancyGridLidar::MeterpointToIndex(double x, double y)
-{
-	int x_ = x/grid.info.resolution + grid.info.width*0.5;
-	int y_ = y/grid.info.resolution + grid.info.height*0.5;
-	int index = y_*grid.info.width + x_;
-	return index;
-}
+    void OccupancyGridLidar::publication()
+    {
+        grid.header.frame_id = pub_frameid;
+        grid.header.stamp = pub_stamp;
+        pub.publish(grid);
+    }
 
-void OccupancyGridLidar::Publication(void)
-{
-	grid.header.frame_id = pub_frameid;
-	grid.header.stamp = pub_stamp;
-	pub.publish(grid);
-}
+    void OccupancyGridLidar::process()
+    {
+        ros::Rate loop_rate(param_.hz);
 
-int main(int argc, char** argv)
-{
-    ros::init(argc, argv, "hokuyo_raycast");
-	std::cout << "= hokuyo_raycast =" << std::endl;
-	
-	OccupancyGridLidar occupancygrid_lidar;
+        while (ros::ok()) {
+            ros::spinOnce();
+            loop_rate.sleep();
+        }
 
-	ros::spin();
+    }
 }
