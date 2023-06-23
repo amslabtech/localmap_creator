@@ -1,0 +1,8 @@
+<launch>
+	<!-- tf -->
+    <node pkg="tf" type="static_transform_publisher" name="camera_link2camera_aligned_depth_to_color_frame" 
+          args="-0.00022135 0.0148138152435 0.0002108 0.0043222509546489525 -0.0006698774208260594 -0.003102426125164551 camera_link camera_aligned_depth_to_color_frame 100" />
+    <node pkg="tf" type="static_transform_publisher" name="camera_aligned_depth_to_color_frame2camera_color_optical_frame" 
+          args="0.0 0.0 0.0 -1.5707963267948968 0.0 -1.5707963267948968 camera_aligned_depth_to_color_frame camera_color_optical_frame 100" />
+
+</launch>

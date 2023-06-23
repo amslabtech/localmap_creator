@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<launch>
+	<!-- params -->
+    <arg name="resolution" default="0.1"/>
+    <arg name="w" default="20"/>
+    <arg name="h" default="20"/>
+    <arg name="expand_range" default="0.5"/>
+    <arg name="zerocell_ratio" default="0.4"/>
+    <arg name="zerocell_ratio_grassy" default="0.2"/>
+
+	<!-- downsampling realsense points -->
+	<node pkg="localmap_creator" type="downsample_and_transform" name="downsample_and_transform"
+		ns="localmap_creator">
+		<remap from="/cloud" to="/camera/depth_registered/points"/>
+		<remap from="/cloud/downsampled" to="/realsense/downsampled"/>
+	</node>
+	<node pkg="localmap_creator" type="realsense_object" name="realsense_obstacle" ns="localmap_creator">
+		<remap from="/cloud" to="/realsense/downsampled"/>
+		<remap from="/cloud/curv" to="/realsense/obstacles"/>
+		<remap from="/cloud/plane" to="/realsense/clear"/>
+		<param name="UPPER_LIMIT" value="0.2" type="double"/>
+		<param name="UNDER_LIMIT" value="-0.5" type="double"/>
+		<param name="VIEW_RANGE_X_MIN" value="0.3" type="double"/>
+		<param name="VIEW_RANGE_X_MAX" value="1.2" type="double"/>
+		<param name="VIEW_RANGE_Y_MIN" value="-0.8" type="double"/>
+		<param name="VIEW_RANGE_Y_MAX" value="0.8" type="double"/>
+		<param name="VIEW_RANGE_Z_MIN" value="-0.5" type="double"/>
+		<param name="VIEW_RANGE_Z_MAX" value="0.5" type="double"/>
+
+	</node>
+
+
+	<!-- hokuyo -->
+	<node pkg="localmap_creator" type="scan2pcl" name="scan2pcl" ns="localmap_creator">
+		<remap from="/scan" to="/front_laser/scan"/>
+		<remap from="/cloud" to="/hokuyo_obstacles"/>
+	</node>
+
+
+	<!-- make each occupancygrid -->
+		<!-- velodyne -->
+	<node pkg="localmap_creator" type="ground_and_obstacles_to_grid" name="velodyne_localmap" ns="localmap_creator">
+		<remap from="/rm_ground" to="/velodyne_obstacles"/>
+		<remap from="/ground" to="/recognition/road_recognizer/cloud/road/stored"/>
+		<remap from="/curv" to="/recognition/road_recognizer/road_cloud_publisher/cloud/curvature"/>
+		<remap from="/occupancygrid/lidar" to="/occupancygrid/velodyne/filtered"/>
+		<remap from="/occupancygrid/lidar/raw" to="/occupancygrid/velodyne/raw"/>
+		<remap from="/grass_points" to="/grass_points"/>
+		<param name="ROAD_INTENSITY_MIN" value="1" type="double"/>
+		<param name="ROAD_INTENSITY_MAX" value="15" type="double"/>
+		<param name="ZEROCELL_RATIO" value="$(arg zerocell_ratio)"/>
+		<param name="ZEROCELL_RATIO_grassy" value="$(arg zerocell_ratio_grassy)"/>
+		<param name="FILTER_RANGE" value="4" type="int"/>
+		<param name="resolution" value="$(arg resolution)" type="double"/>
+		<param name="w" value="$(arg w)" type="double"/>
+		<param name="h" value="$(arg h)" type="double"/>
+	</node>
+
+		<!-- hokuyo -->
+	<node pkg="localmap_creator" type="hokuyo_raycast" name="hokuyo_localmap" ns="localmap_creator">
+		<remap from="/hokuyo_points" to="/hokuyo_obstacles"/>
+		<remap from="/occupancygrid/lidar" to="/occupancygrid/hokuyo"/>
+		<param name="resolution" value="$(arg resolution)" type="double"/>
+		<param name="w" value="$(arg w)" type="double"/>
+		<param name="h" value="$(arg h)" type="double"/>
+	</node>
+
+	<node pkg="localmap_creator" type="hokuyo_raycast" name="realsense_localmap" ns="localmap_creator">
+        <remap from="/hokuyo_points" to="/realsense/obstacles"/>
+		<remap from="/occupancygrid/lidar" to="/occupancygrid/realsense"/>
+		<param name="resolution" value="$(arg resolution)" type="double"/>
+		<param name="w" value="$(arg w)" type="double"/>
+		<param name="h" value="$(arg h)" type="double"/>
+	</node>
+
+	<!-- integrate localmap -->
+	<node pkg="localmap_creator" type="occupancygrid_integrate" name="occupancygrid_integrate" ns="localmap_creator">
+		<remap from="/occupancygrid/lidar/stored" to="/occupancygrid/velodyne/filtered"/>
+		<remap from="/occupancygrid/realsense" to="/occupancygrid/realsense"/>
+		<remap from="/occupancygrid/hokuyo" to="/occupancygrid/hokuyo"/>
+		<param name="EXPAND_RANGE" value="$(arg expand_range)"/>
+		<param name="EXPAND_RANGE_MINI" value="0.15" type="double"/>
+	</node>
+
+</launch>
