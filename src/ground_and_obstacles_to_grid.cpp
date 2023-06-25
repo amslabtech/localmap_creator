@@ -80,30 +80,85 @@ class OccupancyGridLidar{
 
 	public:
 		OccupancyGridLidar();
+
         /**
          * @brief intialize map data
          */
 		void GridInitialization(void);
-		void CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr& msg);
+
         /**
-         * @brief
+         * @briefi Implement Voxel filters and publish the created data
+         */
+		void CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr& msg);
+
+        /**
+         * @brief Voxel filter implementation and flag handling
          */
 		void CallbackGround(const sensor_msgs::PointCloud2ConstPtr& msg);
+
+        /**
+         * @brief Coordinate transformation and flag handling
+         */
 		void CallbackCurv(const sensor_msgs::PointCloud2ConstPtr& msg);
+
+        /**
+         * @brief change zerocell_ratio
+         */
 		void CallbackGrassy(const std_msgs::BoolConstPtr& msg);
+
+        /**
+         * @brief check whether cell is in map
+         *
+         * @param[in] x coordinate x
+         * @param[in] y coordinate y
+         */
 		bool CellIsInside(nav_msgs::OccupancyGrid &grid, int x, int y);
+
         /**
          * @brief limite search range
+         *
          */
 		void ExtractPCInRange(pcl::PointCloud<pcl::PointXYZI>::Ptr &pc);
+
+        /**
+         * @brief Counts the number of cells in the filter and populates the filter
+         */
 		void Filter(void);
+
         /**
          * @brief input obstacle information to grid map
          */
 		void InputGrid(void);
+
+        /**
+         * @brief set grid map index from obstacle coordinate
+         * @param[in] x obstacle coordinate x
+         * @param[in] y obstacle coordinate y
+         * @return int index of grid map
+         */
 		int MeterpointToIndex(double x, double y);
+
+        /**
+         * @brief set coordinate from index
+         *
+         * @param[in] grid map index
+         * @param[in] x map coordinate x
+         * @param[in] y map coordinate y
+         */
 		void IndexToPoint(nav_msgs::OccupancyGrid &grid, int index, int& x, int& y);
+
+        /**
+         * @brief set grid map index from obstacle coordinate
+         *
+         * @param[in] x obstacle coordinate x
+         * @param[in] y obstacle coordinate y
+         * @return int index of grid map
+         */
 		int PointToIndex(nav_msgs::OccupancyGrid &grid, int x, int y);
+
+        /**
+         * @brief
+         */
 		void Publication(void);
 };
 
@@ -172,24 +227,30 @@ void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr
 {
 	// std::cout << "=====================" << std::endl;
 
-	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc_ {new pcl::PointCloud<pcl::PointXYZI>};
-	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc {new pcl::PointCloud<pcl::PointXYZI>};
+	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc_ {new pcl::PointCloud<pcl::PointXYZI>}; // Assign point cloud location information and luminance
+	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc {new pcl::PointCloud<pcl::PointXYZI>};  // Same as above
 	sensor_msgs::PointCloud2 pc2_out;
 	// double time = ros::Time::now().toSec();
-	pcl::fromROSMsg(*msg, *tmp_pc_);
+	pcl::fromROSMsg(*msg, *tmp_pc_);                                                    // Convert from ROS format to PCL format
 
 	pcl::VoxelGrid<pcl::PointXYZI> vg;
-    vg.setInputCloud (tmp_pc_);
-    vg.setLeafSize (0.05f, 0.05f, 100.0f);
-    vg.filter (*tmp_pc);
+    vg.setInputCloud (tmp_pc_);                                                         // Approximation of point clouds by center of gravity per grid
+    vg.setLeafSize (0.05f, 0.05f, 100.0f);                                              // Set the range to filter
+    vg.filter (*tmp_pc);                                                                // Create a VoxelGrid filter
 	// std::cout << "delay of downsampling rm_ground : "
 	// 	<< ros::Time::now().toSec() - time << std::endl;
 	// time = ros::Time::now().toSec();
 
 	try{
         tf::StampedTransform transform;
+
+        // Set the coordinate system of the point cloud data from the baselink coordinate system at the latest time to transform
         tflistener.lookupTransform("/base_link", msg->header.frame_id, ros::Time(0), transform);
+
+        // Generate an empty matrix for affine transformation
         Eigen::Affine3d affine;
+
+        // Converts a tf Transform into an Eigen Affine3d
         tf::transformTFToEigen(transform, affine);
         pcl::transformPointCloud(*tmp_pc, *tmp_pc, affine);
 		// std::cout << "delay of rmground transform : "
@@ -209,6 +270,7 @@ void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr
 
 	pub_frameid = "/base_link";
 	pub_stamp = msg->header.stamp;
+	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc {new pcl::PointCloud<pcl::PointXYZI>};
 
 	InputGrid();
 	// std::cout << "delay of input grid : "
@@ -232,20 +294,20 @@ void OccupancyGridLidar::CallbackRmGround(const sensor_msgs::PointCloud2ConstPtr
 
 void OccupancyGridLidar::CallbackGround(const sensor_msgs::PointCloud2ConstPtr &msg)/*{{{*/
 {
-	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc {new pcl::PointCloud<pcl::PointXYZI>}; //Assign point cloud location information and luminance
+	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc {new pcl::PointCloud<pcl::PointXYZI>};
 	pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_pc_ {new pcl::PointCloud<pcl::PointXYZI>};
 	// double time = ros::Time::now().toSec();
 	pcl::fromROSMsg(*msg, *tmp_pc_);
 
 	// std::cout << "delay of downsampling ground: "
 	// 	<< ros::Time::now().toSec() - time << std::endl;
-	pcl::VoxelGrid<pcl::PointXYZI> vg; //Approximating a point cloud by its center of gravity
-    vg.setInputCloud (tmp_pc_); //Approximating tmp_pc_ by its center of gravity
-    vg.setLeafSize (0.05f, 0.05f, 100.0f); //downsampling
+	pcl::VoxelGrid<pcl::PointXYZI> vg;
+    vg.setInputCloud (tmp_pc_);
+    vg.setLeafSize (0.05f, 0.05f, 100.0f);
     vg.filter (*tmp_pc);
 	// std::cout << "delay of downsampling ground: "
 	// 	<< ros::Time::now().toSec() - time << std::endl;
-	pcl::toROSMsg(*tmp_pc, downsampled);
+	pcl::toROSMsg(*tmp_pc, downsampled); // Convert filtered point cloud data to ROS message and deliver
 	pub_stamp = msg->header.stamp;
 	downsampled.header.frame_id = pub_frameid;
 	downsampled.header.stamp = pub_stamp;
