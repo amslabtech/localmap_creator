@@ -70,7 +70,7 @@ namespace occupancygrid_integrate
              * @param[in] x coordinate x
              * @param[in] y coordinate y
              */
-            bool cell_is_inside(nav_msgs::OccupancyGrid &grid, int x, int y);
+            bool is_cell_inside(nav_msgs::OccupancyGrid &grid, int x, int y);
             /**
              * combine three grid maps
              */
@@ -219,7 +219,7 @@ namespace occupancygrid_integrate
                 /**expand map to range limit */
                 for(int j=-expand_range_int;j<=expand_range_int;j++){
                     for(int k=-expand_range_int;k<=expand_range_int;k++){
-                        if(cell_is_inside(grid, x+j, y+k)){
+                        if(is_cell_inside(grid, x+j, y+k)){
                             double distance = sqrt((x+j+0.5)*(x+j+0.5) + (y+k+0.5)*(y+k+0.5)); //distance on the expand map
                             distance *= reso;
                             if(distance > EXPAND_RANGE || Data==100){
@@ -291,7 +291,7 @@ namespace occupancygrid_integrate
      * @param[in] x coordinate x
      * @param[in] y coordinate y
      */
-    bool OccupancyGridCombination::cell_is_inside(nav_msgs::OccupancyGrid &grid, int x, int y)
+    bool OccupancyGridCombination::is_cell_inside(nav_msgs::OccupancyGrid &grid, int x, int y)
     {
         int w = grid.info.width;
         int h = grid.info.height;
