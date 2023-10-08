@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   image_geometry
   laser_geometry
+  pcl_ros
 )
 
 ## System dependencies are found with CMake's conventions
@@ -247,13 +248,17 @@ target_link_libraries(realsense_object
 	${catkin_LIBRARIES}
   	${PCL_LIBRARIES}
 )
-
 add_executable(simple_localmap_creator src/simple_localmap_creator.cpp)
 target_link_libraries(simple_localmap_creator
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
 )
 add_dependencies(simple_localmap_creator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_executable(pcl_merger src/pcl_merger.cpp)
+target_link_libraries(pcl_merger
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+)
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
