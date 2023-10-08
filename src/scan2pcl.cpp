@@ -25,7 +25,7 @@ SCAN_TO_PCL::SCAN_TO_PCL(){
 void SCAN_TO_PCL::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan){
 	sensor_msgs::PointCloud2 cloud;
 	try{
-		projector_.transformLaserScanToPointCloud("/base_link", *scan, cloud, tfListener_);
+		projector_.transformLaserScanToPointCloud("base_link", *scan, cloud, tfListener_);
 		point_cloud_publisher_.publish(cloud);
 	}
 	catch(tf::TransformException ex){
