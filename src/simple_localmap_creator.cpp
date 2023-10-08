@@ -11,12 +11,16 @@ SimpleLocalmapCreator::SimpleLocalmapCreator(void)
 
     local_nh_.param("width", width_, 20.0);
     local_nh_.param("resolution", resolution_, 0.1);
+    local_nh_.param("max_height", max_height_, 1.5);
+    local_nh_.param("min_height", min_height_, 0.05);
     grid_width_ = std::round(width_ / resolution_);
     grid_width_2_ = grid_width_ / 2;
     range_ = width_ * 0.5;
     grid_size_ = grid_width_ * grid_width_;
     local_nh_.param("expand_radius", expand_radius_, 0.3);
     ROS_INFO_STREAM("width: " << width_);
+    ROS_INFO_STREAM("max_height: " << max_height_);
+    ROS_INFO_STREAM("min_height: " << min_height_);
     ROS_INFO_STREAM("resolution: " << resolution_);
     ROS_INFO_STREAM("grid_width_: " << grid_width_);
     ROS_INFO_STREAM("grid_width_2_: " << grid_width_2_);
@@ -59,6 +63,9 @@ void SimpleLocalmapCreator::cloud_callback(const sensor_msgs::PointCloud2ConstPt
     for(const auto& p : cloud_ptr->points){
         const double distance_squared = p.x * p.x + p.y * p.y;
         if(distance_squared > range_squared){
+            continue;
+        }
+        if(p.z < min_height_ || max_height_ < p.z){
             continue;
         }
         const int index = get_index_from_xy(p.x, p.y);

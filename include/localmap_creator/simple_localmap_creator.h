@@ -36,7 +36,8 @@ protected:
     ros::Publisher localmap_pub_;
     ros::Publisher localmap_expand_pub_;
     double width_;
-    double height_;
+    double max_height_;
+    double min_height_;
     double resolution_;
     unsigned int grid_width_;
     unsigned int grid_width_2_;
