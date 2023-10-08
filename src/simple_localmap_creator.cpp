@@ -80,20 +80,20 @@ void SimpleLocalmapCreator::cloud_callback(const sensor_msgs::PointCloud2ConstPt
     localmap_expand = localmap;
     const int expand_radius_grid = std::round(expand_radius_ / resolution_);
     for(unsigned int i=0;i<grid_size_;++i){
-        if(localmap.data[i] == 0){
-            continue;
-        }
-        const unsigned int x_i = get_x_index_from_index(i);
-        const unsigned int y_i = get_y_index_from_index(i);
-        for(int j=-expand_radius_grid;j<=expand_radius_grid;++j){
-            for(int k=-expand_radius_grid;k<=expand_radius_grid;++k){
-                if(!is_valid_point(x_i + j, y_i + k)){
-                    continue;
-                }
-                const unsigned int distance_squared = j * j + k * k;
-                if(distance_squared <= expand_radius_grid * expand_radius_grid){
-                    const unsigned int index = (y_i + k) * grid_width_ + (x_i + j);
-                    localmap_expand.data[index] = 100;
+        if(localmap.data[i] == 100) {
+            int x = i%(int)grid_width_;
+            int y = i/(int)grid_width_;
+            for(int j=-expand_radius_grid; j<=expand_radius_grid; j++) {
+                for(int k=-expand_radius_grid; k<=expand_radius_grid; k++) {
+                    int index = (y+j)*grid_width_ + (x+k);
+                    int index_x = index % (int)grid_width_;
+                    int index_y = index / (int)grid_width_;
+                    if(index >= 0 && index < grid_size_ && index_x >= x-expand_radius_grid &&
+                       index_x <= x+expand_radius_grid && index_y >= y-expand_radius_grid &&
+                       index_y <= y+expand_radius_grid) {
+                        localmap_expand.data[index] = 100;
+                    }
+
                 }
             }
         }
