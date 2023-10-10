@@ -259,6 +259,11 @@ target_link_libraries(pc_merger
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
 )
+add_executable(pc_extractor src/pc_extractor.cpp)
+target_link_libraries(pc_extractor
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+)
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)

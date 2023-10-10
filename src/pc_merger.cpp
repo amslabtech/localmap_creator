@@ -47,11 +47,11 @@ PcMerger::PcMerger() : private_nh_("~"), cloud_count_(0)
     point_cloud_subs_.resize(cloud_num_);
     for (int i = 0; i < cloud_num_; i++)
     {
-        point_cloud_subs_[i] = private_nh_.subscribe(
+        point_cloud_subs_[i] = nh_.subscribe(
             "/cloud" + std::to_string(i), 1, &PcMerger::cloud_callback, this,
             ros::TransportHints().reliable().tcpNoDelay());
     }
-    point_cloud_pub_ = private_nh_.advertise<sensor_msgs::PointCloud2>("/cloud", 1);
+    point_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cloud", 1);
 
     cloud_.header.frame_id = target_frame_;
 }
