@@ -254,8 +254,8 @@ target_link_libraries(simple_localmap_creator
   ${PCL_LIBRARIES}
 )
 add_dependencies(simple_localmap_creator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_executable(pcl_merger src/pcl_merger.cpp)
-target_link_libraries(pcl_merger
+add_executable(pc_merger src/pc_merger.cpp)
+target_link_libraries(pc_merger
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
 )
