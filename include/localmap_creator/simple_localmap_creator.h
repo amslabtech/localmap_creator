@@ -39,11 +39,12 @@ protected:
     double max_height_;
     double min_height_;
     double resolution_;
-    unsigned int grid_width_;
-    unsigned int grid_width_2_;
+    double leaf_size_;
     double range_;
     double grid_size_;
     double expand_radius_;
+    unsigned int grid_width_;
+    unsigned int grid_width_2_;
 };
 }
 #endif// __SIMPLE_LOCALMAP_CREATOR_H

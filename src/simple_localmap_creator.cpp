@@ -9,24 +9,29 @@ SimpleLocalmapCreator::SimpleLocalmapCreator(void)
     localmap_expand_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("local_map/expand", 1);
     cloud_sub_ = nh_.subscribe("cloud", 1, &SimpleLocalmapCreator::cloud_callback, this, ros::TransportHints().reliable().tcpNoDelay());
 
-    local_nh_.param("width", width_, 20.0);
-    local_nh_.param("resolution", resolution_, 0.1);
-    local_nh_.param("max_height", max_height_, 1.5);
-    local_nh_.param("min_height", min_height_, 0.05);
+    local_nh_.param<double>("width", width_, 20.0);
+    local_nh_.param<double>("max_height", max_height_, 1.5);
+    local_nh_.param<double>("min_height", min_height_, 0.05);
+    local_nh_.param<double>("resolution", resolution_, 0.1);
+    local_nh_.param<double>("leaf_size", leaf_size_, 0.1);
+    local_nh_.param<double>("expand_radius", expand_radius_, 0.3);
+
+    leaf_size_ = std::max(leaf_size_, resolution_);
     grid_width_ = std::round(width_ / resolution_);
     grid_width_2_ = grid_width_ / 2;
     range_ = width_ * 0.5;
     grid_size_ = grid_width_ * grid_width_;
-    local_nh_.param("expand_radius", expand_radius_, 0.3);
+
     ROS_INFO_STREAM("width: " << width_);
     ROS_INFO_STREAM("max_height: " << max_height_);
     ROS_INFO_STREAM("min_height: " << min_height_);
     ROS_INFO_STREAM("resolution: " << resolution_);
+    ROS_INFO_STREAM("leaf_size: " << leaf_size_);
+    ROS_INFO_STREAM("expand_radius: " << expand_radius_);
     ROS_INFO_STREAM("grid_width_: " << grid_width_);
     ROS_INFO_STREAM("grid_width_2_: " << grid_width_2_);
     ROS_INFO_STREAM("range: " << range_);
     ROS_INFO_STREAM("grid_size: " << grid_size_);
-    ROS_INFO_STREAM("expand_radius: " << expand_radius_);
 }
 
 void SimpleLocalmapCreator::process(void)
@@ -55,7 +60,7 @@ void SimpleLocalmapCreator::cloud_callback(const sensor_msgs::PointCloud2ConstPt
     // downsampling
     pcl::VoxelGrid<PointType> vg;
     vg.setInputCloud(cloud_ptr);
-    vg.setLeafSize(resolution_, resolution_, resolution_);
+    vg.setLeafSize(leaf_size_, leaf_size_, leaf_size_);
     vg.filter(*cloud_ptr);
 
     // set cost
