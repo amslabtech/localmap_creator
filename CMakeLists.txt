@@ -6,11 +6,14 @@ add_compile_options(-std=c++17 -O2 -g)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  geometry_msgs
+  nav_msgs
   std_msgs
   tf
   tf_conversions
   tf2
   tf2_geometry_msgs
+  tf2_ros
   cv_bridge
   image_transport
   image_geometry
