@@ -44,6 +44,7 @@ private:
   ros::NodeHandle private_nh_;
   ros::Publisher map_pub_;
   ros::Subscriber map_sub_;
+  ros::Subscriber pose_sub_;
   ros::Subscriber road_sub_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
@@ -59,6 +60,8 @@ VirtualRoadProjector::VirtualRoadProjector(void) : private_nh_("~"), tf_listener
   map_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("/local_map/projected", 1);
   map_sub_ = nh_.subscribe(
       "/local_map", 1, &VirtualRoadProjector::map_callback, this, ros::TransportHints().reliable().tcpNoDelay());
+  pose_sub_ = nh_.subscribe(
+      "/localized_pose", 1, &VirtualRoadProjector::pose_callback, this, ros::TransportHints().reliable().tcpNoDelay());
   road_sub_ = nh_.subscribe(
       "/node_edge_map/road", 1, &VirtualRoadProjector::road_info_callback, this,
       ros::TransportHints().reliable().tcpNoDelay());
