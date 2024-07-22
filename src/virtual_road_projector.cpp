@@ -105,9 +105,9 @@ VirtualRoadProjector::project_road(const nav_msgs::OccupancyGrid &map, amsl_navi
   tf2::doTransform(road.point1, road.point1, transform_stamped);
 
   // project road to map
-  for (int i = 0; i < projected_map.info.width * projected_map.info.height; i++)
+  for (int i = 0; i < projected_map.data.size(); i++)
   {
-    const geometry_msgs::Point point = index_to_point(map, i);
+    const geometry_msgs::Point point = index_to_point(projected_map, i);
     if (is_edge_of_road(point, road))
     {
       if (hypot(point.x, point.y) <= param_.robot_radius)
@@ -115,6 +115,8 @@ VirtualRoadProjector::project_road(const nav_msgs::OccupancyGrid &map, amsl_navi
       projected_map.data[i] = 100;
     }
   }
+
+  return projected_map;
 }
 
 geometry_msgs::Point VirtualRoadProjector::index_to_point(const nav_msgs::OccupancyGrid &map, const int index)
