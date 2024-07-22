@@ -1,4 +1,4 @@
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <optional>
 #include <ros/ros.h>
@@ -24,18 +24,21 @@ public:
 
 private:
   void map_callback(const nav_msgs::OccupancyGridConstPtr &msg);
+  void pose_callback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
   void road_info_callback(const amsl_navigation_msgs::RoadConstPtr &msg);
   nav_msgs::OccupancyGrid project_road(const nav_msgs::OccupancyGrid &map, amsl_navigation_msgs::Road road);
+  bool inside_road(const amsl_navigation_msgs::Road &road, const geometry_msgs::Point &point);
+  geometry_msgs::Point index_to_point(const nav_msgs::OccupancyGrid &map, const int index);
+  bool is_edge_of_road(const geometry_msgs::Point &point, const amsl_navigation_msgs::Road &road);
   float calc_dist_to_path(
       const geometry_msgs::Point &edge_point0, const geometry_msgs::Point &edge_point1,
       const geometry_msgs::Point &target_point);
-  geometry_msgs::Point index_to_point(const nav_msgs::OccupancyGrid &map, const int index);
-  bool is_edge_of_road(const geometry_msgs::Point &point, const amsl_navigation_msgs::Road &road);
 
   Param param_;
   bool road_updated_ = false;
   int count_of_not_received_road_ = 0;
   std::optional<amsl_navigation_msgs::Road> road_;
+  std::optional<geometry_msgs::PoseWithCovarianceStamped> pose_;
 
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
@@ -76,6 +79,8 @@ void VirtualRoadProjector::map_callback(const nav_msgs::OccupancyGridConstPtr &m
   road_updated_ = false;
 }
 
+void VirtualRoadProjector::pose_callback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg) { pose_ = *msg; }
+
 void VirtualRoadProjector::road_info_callback(const amsl_navigation_msgs::RoadConstPtr &msg)
 {
   road_ = *msg;
@@ -106,6 +111,10 @@ VirtualRoadProjector::project_road(const nav_msgs::OccupancyGrid &map, amsl_navi
   tf2::doTransform(road.point0, road.point0, transform_stamped);
   tf2::doTransform(road.point1, road.point1, transform_stamped);
 
+  if (pose_.has_value())
+    if (!inside_road(road, pose_.value().pose.pose.position))
+      return map;
+
   // project road to map
   for (int i = 0; i < projected_map.data.size(); i++)
   {
@@ -119,6 +128,17 @@ VirtualRoadProjector::project_road(const nav_msgs::OccupancyGrid &map, amsl_navi
   }
 
   return projected_map;
+}
+
+bool VirtualRoadProjector::inside_road(const amsl_navigation_msgs::Road &road, const geometry_msgs::Point &point)
+{
+  const Eigen::Vector3d reference_vector(road.point1.x - road.point0.x, road.point1.y - road.point0.y, 0.0);
+  const Eigen::Vector3d target_vector(point.x - road.point0.x, point.y - road.point0.y, 0.0);
+  const float dist_to_path = calc_dist_to_path(road.point0, road.point1, point);
+  if (reference_vector.cross(target_vector).z() < 0.0)
+    return dist_to_path < road.distance_to_right;
+  else
+    return dist_to_path < road.width - road.distance_to_right;
 }
 
 geometry_msgs::Point VirtualRoadProjector::index_to_point(const nav_msgs::OccupancyGrid &map, const int index)
