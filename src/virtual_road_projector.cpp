@@ -5,6 +5,8 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_listener.h>
 
+#include <Eigen/Dense>
+
 #include "amsl_navigation_msgs/Road.h"
 
 struct Param
@@ -132,10 +134,10 @@ geometry_msgs::Point VirtualRoadProjector::index_to_point(const nav_msgs::Occupa
 
 bool VirtualRoadProjector::is_edge_of_road(const geometry_msgs::Point &point, const amsl_navigation_msgs::Road &road)
 {
-  const float direction = atan2(road.point1.y - road.point0.y, road.point1.x - road.point0.x);
-  const float angle = atan2(point.y - road.point0.y, point.x - road.point0.x) - direction;
+  const Eigen::Vector3d reference_vector(road.point1.x - road.point0.x, road.point1.y - road.point0.y, 0.0);
+  const Eigen::Vector3d target_vector(point.x - road.point0.x, point.y - road.point0.y, 0.0);
   const float dist_to_path = calc_dist_to_path(road.point0, road.point1, point);
-  if (angle < 0)
+  if (reference_vector.cross(target_vector).z() < 0.0)
   {
     return road.distance_to_right <= dist_to_path && dist_to_path < road.distance_to_right + param_.wall_thickness;
   }

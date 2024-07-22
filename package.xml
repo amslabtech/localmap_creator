@@ -27,6 +27,7 @@
   <depend>cv_bridge</depend>
   <depend>libpcl-all-dev</depend>
   <depend>pcl_ros</depend>
+  <depend>eigen</depend>
 
   <build_depend>amsl_navigation_msgs</build_depend>
 
