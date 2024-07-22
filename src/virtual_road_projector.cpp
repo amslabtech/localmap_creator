@@ -115,8 +115,11 @@ VirtualRoadProjector::project_road(const nav_msgs::OccupancyGrid &map, amsl_navi
   tf2::doTransform(road.point1, road.point1, transform_stamped);
 
   if (pose_.has_value())
+  {
+    tf2::doTransform(pose_.value().pose.pose.position, pose_.value().pose.pose.position, transform_stamped);
     if (!inside_road(road, pose_.value().pose.pose.position))
       return map;
+  }
 
   // project road to map
   for (int i = 0; i < projected_map.data.size(); i++)
