@@ -1,54 +1,11 @@
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <nav_msgs/OccupancyGrid.h>
-#include <optional>
-#include <ros/ros.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <tf2_ros/transform_listener.h>
+/**
+ * @file virtual_road_projector.cpp
+ * @author amsl
+ * @brief Virtual road projector class
+ * @copyright Copyright (c) 2024
+ */
 
-#include <Eigen/Dense>
-
-#include "amsl_navigation_msgs/Road.h"
-
-struct Param
-{
-  std::string global_frame_id;
-  int allowable_num_of_not_received;
-  float robot_radius;
-  float wall_thickness;
-};
-
-class VirtualRoadProjector
-{
-public:
-  VirtualRoadProjector(void);
-
-private:
-  void map_callback(const nav_msgs::OccupancyGridConstPtr &msg);
-  void pose_callback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
-  void road_info_callback(const amsl_navigation_msgs::RoadConstPtr &msg);
-  nav_msgs::OccupancyGrid project_road(const nav_msgs::OccupancyGrid &map, amsl_navigation_msgs::Road road);
-  bool inside_road(const amsl_navigation_msgs::Road &road, const geometry_msgs::Point &point);
-  geometry_msgs::Point index_to_point(const nav_msgs::OccupancyGrid &map, const int index);
-  bool is_edge_of_road(const geometry_msgs::Point &point, const amsl_navigation_msgs::Road &road);
-  float calc_dist_to_path(
-      const geometry_msgs::Point &edge_point0, const geometry_msgs::Point &edge_point1,
-      const geometry_msgs::Point &target_point);
-
-  Param param_;
-  bool road_updated_ = false;
-  int count_of_not_received_road_ = 0;
-  std::optional<amsl_navigation_msgs::Road> road_;
-  std::optional<geometry_msgs::PoseWithCovarianceStamped> pose_;
-
-  ros::NodeHandle nh_;
-  ros::NodeHandle private_nh_;
-  ros::Publisher map_pub_;
-  ros::Subscriber map_sub_;
-  ros::Subscriber pose_sub_;
-  ros::Subscriber road_sub_;
-  tf2_ros::Buffer tf_buffer_;
-  tf2_ros::TransformListener tf_listener_;
-};
+#include "localmap_creator/virtual_road_projector.h"
 
 VirtualRoadProjector::VirtualRoadProjector(void) : private_nh_("~"), tf_listener_(tf_buffer_)
 {
@@ -81,8 +38,6 @@ void VirtualRoadProjector::map_callback(const nav_msgs::OccupancyGridConstPtr &m
 
   road_updated_ = false;
 }
-
-void VirtualRoadProjector::pose_callback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg) { pose_ = *msg; }
 
 void VirtualRoadProjector::road_info_callback(const amsl_navigation_msgs::RoadConstPtr &msg)
 {
