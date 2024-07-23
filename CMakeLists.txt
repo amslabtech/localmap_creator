@@ -1,32 +1,32 @@
 cmake_minimum_required(VERSION 3.5)
 project(localmap_creator)
 
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
+add_compile_options(-std=c++17 -O2 -g)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  geometry_msgs
+  nav_msgs
   std_msgs
   tf
   tf_conversions
   tf2
   tf2_geometry_msgs
+  tf2_ros
   cv_bridge
   image_transport
   image_geometry
   laser_geometry
   pcl_ros
+  amsl_navigation_msgs
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV REQUIRED)
 find_package(PCL 1.8 REQUIRED)
+find_package(Eigen3 REQUIRED COMPONENTS system)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -264,6 +264,8 @@ target_link_libraries(pc_extractor
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
 )
+add_executable(virtual_road_projector src/virtual_road_projector.cpp)
+target_link_libraries(virtual_road_projector ${catkin_LIBRARIES})
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
