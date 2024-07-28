@@ -29,7 +29,10 @@ void VirtualRoadProjector::map_callback(const nav_msgs::OccupancyGridConstPtr &m
   if (!road_updated_)
     count_of_not_received_road_++;
   if (param_.allowable_num_of_not_received < count_of_not_received_road_)
+  {
     road_.reset();
+    count_of_not_received_road_ = 0;
+  }
 
   if (!road_.has_value())
     map_pub_.publish(*msg);
