@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <std_msgs/Float64.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/point_types.h>
@@ -22,6 +23,7 @@ public:
     SimpleLocalmapCreator(void);
     void process(void);
     void cloud_callback(const sensor_msgs::PointCloud2ConstPtr& msg);
+    void expand_radius_callback(const std_msgs::Float64::ConstPtr& msg);
     int get_index_from_xy(const double x, const double y);
     int get_x_index_from_index(const int index);
     int get_y_index_from_index(const int index);
@@ -33,6 +35,7 @@ protected:
     ros::NodeHandle nh_;
     ros::NodeHandle local_nh_;
     ros::Subscriber cloud_sub_;
+    ros::Subscriber expand_radius_sub_;
     ros::Publisher localmap_pub_;
     ros::Publisher localmap_expand_pub_;
     double width_;
