@@ -8,6 +8,7 @@ SimpleLocalmapCreator::SimpleLocalmapCreator(void)
     localmap_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("local_map", 1);
     localmap_expand_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("local_map/expand", 1);
     cloud_sub_ = nh_.subscribe("cloud", 1, &SimpleLocalmapCreator::cloud_callback, this, ros::TransportHints().reliable().tcpNoDelay());
+    expand_map_coef_sub_ = nh_.subscribe("expand_map_coef", 1, &SimpleLocalmapCreator::expand_map_coef_callback, this, ros::TransportHints().reliable().tcpNoDelay());
 
     local_nh_.param<double>("width", width_, 20.0);
     local_nh_.param<double>("max_height", max_height_, 1.5);
@@ -27,7 +28,7 @@ SimpleLocalmapCreator::SimpleLocalmapCreator(void)
     ROS_INFO_STREAM("min_height: " << min_height_);
     ROS_INFO_STREAM("resolution: " << resolution_);
     ROS_INFO_STREAM("leaf_size: " << leaf_size_);
-    ROS_INFO_STREAM("expand_radius: " << expand_radius_);
+    /* ROS_INFO_STREAM("expand_radius: " << expand_radius_); */
     ROS_INFO_STREAM("grid_width_: " << grid_width_);
     ROS_INFO_STREAM("grid_width_2_: " << grid_width_2_);
     ROS_INFO_STREAM("range: " << range_);
@@ -37,6 +38,12 @@ SimpleLocalmapCreator::SimpleLocalmapCreator(void)
 void SimpleLocalmapCreator::process(void)
 {
     ros::spin();
+}
+
+void SimpleLocalmapCreator::expand_map_coef_callback(const std_msgs::Float32ConstPtr& msg)
+{
+    expand_map_coef_ = *msg;
+    ROS_INFO_STREAM("expand_map_coef: " << expand_map_coef_);
 }
 
 void SimpleLocalmapCreator::cloud_callback(const sensor_msgs::PointCloud2ConstPtr& msg)
@@ -83,7 +90,14 @@ void SimpleLocalmapCreator::cloud_callback(const sensor_msgs::PointCloud2ConstPt
     // expand
     nav_msgs::OccupancyGrid localmap_expand;
     localmap_expand = localmap;
-    const int expand_radius_grid = std::round(expand_radius_ / resolution_);
+    int expand_radius_grid;
+    if(expand_map_coef_.data == 0){
+        ROS_INFO("OK");
+        expand_radius_grid = std::round(expand_radius_ / resolution_);
+    }
+    else{
+        expand_radius_grid = std::round(expand_map_coef_.data / resolution_);
+    }
     for(unsigned int i=0;i<grid_size_;++i){
         if(localmap.data[i] == 100) {
             int x = i%(int)grid_width_;

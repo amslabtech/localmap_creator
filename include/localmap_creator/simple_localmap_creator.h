@@ -9,6 +9,7 @@
 #include <pcl/point_types.h>
 #include <pcl/filters/voxel_grid.h>
 #include <tf2/utils.h>
+#include <std_msgs/Float32.h>
 
 namespace localmap_creator
 {
@@ -22,6 +23,7 @@ public:
     SimpleLocalmapCreator(void);
     void process(void);
     void cloud_callback(const sensor_msgs::PointCloud2ConstPtr& msg);
+    void expand_map_coef_callback(const std_msgs::Float32ConstPtr& msg);
     int get_index_from_xy(const double x, const double y);
     int get_x_index_from_index(const int index);
     int get_y_index_from_index(const int index);
@@ -33,6 +35,7 @@ protected:
     ros::NodeHandle nh_;
     ros::NodeHandle local_nh_;
     ros::Subscriber cloud_sub_;
+    ros::Subscriber expand_map_coef_sub_;
     ros::Publisher localmap_pub_;
     ros::Publisher localmap_expand_pub_;
     double width_;
@@ -45,6 +48,7 @@ protected:
     double expand_radius_;
     unsigned int grid_width_;
     unsigned int grid_width_2_;
+    std_msgs::Float32 expand_map_coef_;
 };
 }
 #endif// __SIMPLE_LOCALMAP_CREATOR_H
