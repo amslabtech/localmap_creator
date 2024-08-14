@@ -8,6 +8,7 @@ SimpleLocalmapCreator::SimpleLocalmapCreator(void)
     localmap_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("local_map", 1);
     localmap_expand_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("local_map/expand", 1);
     cloud_sub_ = nh_.subscribe("cloud", 1, &SimpleLocalmapCreator::cloud_callback, this, ros::TransportHints().reliable().tcpNoDelay());
+    expand_radius_sub_ = nh_.subscribe("/local_map/expand_radius", 1, &SimpleLocalmapCreator::expand_radius_callback, this, ros::TransportHints().reliable().tcpNoDelay());
 
     local_nh_.param<double>("width", width_, 20.0);
     local_nh_.param<double>("max_height", max_height_, 1.5);
@@ -37,6 +38,11 @@ SimpleLocalmapCreator::SimpleLocalmapCreator(void)
 void SimpleLocalmapCreator::process(void)
 {
     ros::spin();
+}
+
+void SimpleLocalmapCreator::expand_radius_callback(const std_msgs::Float64::ConstPtr& msg)
+{
+    expand_radius_ = msg->data;
 }
 
 void SimpleLocalmapCreator::cloud_callback(const sensor_msgs::PointCloud2ConstPtr& msg)
