@@ -267,6 +267,12 @@ target_link_libraries(pc_extractor
 add_executable(virtual_road_projector src/virtual_road_projector.cpp)
 target_link_libraries(virtual_road_projector ${catkin_LIBRARIES})
 
+add_executable(removal_filter src/removal_filter.cpp)
+target_link_libraries(removal_filter
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+)
+
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
   add_rostest_gtest(localmap_creator_test
