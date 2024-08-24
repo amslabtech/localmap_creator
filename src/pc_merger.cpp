@@ -1,3 +1,10 @@
+/**
+ * @file pc_merger.cpp
+ * @author amsl
+ * @brief Point cloud merger class
+ * @copyright Copyright (c) 2024
+ */
+
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>
 #include <ros/ros.h>

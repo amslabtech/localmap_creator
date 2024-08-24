@@ -1,3 +1,10 @@
+/**
+ * @file pc_extractor.cpp
+ * @author amsl
+ * @brief Point cloud extractor class
+ * @copyright Copyright (c) 2024
+ */
+
 #include <pcl/filters/passthrough.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>

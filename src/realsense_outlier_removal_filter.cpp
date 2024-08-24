@@ -1,3 +1,10 @@
+/**
+ * @file realsense_outlier_removal_filter.cpp
+ * @author amsl
+ * @brief Realsense outlier removal filter class
+ * @copyright Copyright (c) 2024
+ */
+
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/random_sample.h>
 #include <pcl/filters/statistical_outlier_removal.h>
