@@ -19,6 +19,7 @@ protected:
 
   void cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg);
   void random_sample_filter(PointCloudT::Ptr cloud, const int size);
+  void add_dummy_ground_points(PointCloudT::Ptr cloud, const int point_num, const float size);
   void outlier_removal_filter(PointCloudT::Ptr cloud);
 
   std::string target_frame_;
@@ -49,17 +50,7 @@ void OutlierRemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr
   random_sample_filter(pc_transformed_ptr, pc_transformed_ptr->size() / 1000);
 
   // add dummy data
-  pcl::PointCloud<pcl::PointXYZ> cloud;
-  cloud.width = 50;
-  cloud.height = 50;
-  cloud.resize(cloud.width * cloud.height);
-  for (auto &point : cloud)
-  {
-    point.x = 1024 * rand() / (RAND_MAX + 1.0f);
-    point.y = 1024 * rand() / (RAND_MAX + 1.0f);
-    point.z = 0.0;
-  }
-  pc_transformed_ptr->insert(pc_transformed_ptr->end(), cloud.begin(), cloud.end());
+  add_dummy_ground_points(pc_transformed_ptr, 100, 1);
 
   // filter
   outlier_removal_filter(pc_transformed_ptr);
@@ -80,6 +71,19 @@ void OutlierRemovalFilter::random_sample_filter(PointCloudT::Ptr cloud, const in
   sor.filter(*cloud);
 }
 
+void OutlierRemovalFilter::add_dummy_ground_points(PointCloudT::Ptr cloud, const int point_num, const float size)
+{
+  pcl::PointCloud<PointT> dummy_cloud;
+  dummy_cloud.points.resize(point_num);
+  for (auto &point : dummy_cloud)
+  {
+    point.x = size * rand() / (RAND_MAX + 1.0f) - size / 2.0;
+    point.y = size * rand() / (RAND_MAX + 1.0f) - size / 2.0;
+    point.z = 0.0;
+  }
+  cloud->insert(cloud->end(), dummy_cloud.begin(), dummy_cloud.end());
+}
+
 void OutlierRemovalFilter::outlier_removal_filter(PointCloudT::Ptr cloud)
 {
   pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
@@ -91,7 +95,7 @@ void OutlierRemovalFilter::outlier_removal_filter(PointCloudT::Ptr cloud)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "outlier_removal_filter");
+  ros::init(argc, argv, "realsense_outlier_removal_filter");
   OutlierRemovalFilter outlier_removal_filter;
   ros::spin();
 
