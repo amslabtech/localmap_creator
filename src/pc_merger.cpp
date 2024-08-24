@@ -56,7 +56,7 @@ PcMerger::PcMerger(void) : private_nh_("~"), cloud_count_(0)
         "/cloud" + std::to_string(i), 1, &PcMerger::cloud_callback, this,
         ros::TransportHints().reliable().tcpNoDelay());
   }
-  point_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cloud", 1);
+  point_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cloud/merged", 1);
 }
 
 void PcMerger::cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg)
