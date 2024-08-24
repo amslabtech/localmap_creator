@@ -15,13 +15,12 @@ public:
     RemovalFilter(void);
 
 protected:
-    typedef pcl::PointXYZ PointType;
-    typedef pcl::PointCloud<PointType> PointCloudType;
-    typedef pcl::PointCloud<PointType>::Ptr PointCloudTypePtr;
+    typedef pcl::PointXYZ PointT;
+    typedef pcl::PointCloud<PointT> PointCloudT;
 
     void cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg);
-    void random_filter(PointCloudTypePtr cloud, const int size);
-    void removal_filter(PointCloudTypePtr cloud);
+    void random_filter(PointCloudT::Ptr cloud, const int size);
+    void removal_filter(PointCloudT::Ptr cloud);
 
     std::string target_frame_;
     ros::NodeHandle nh_;
@@ -42,11 +41,11 @@ RemovalFilter::RemovalFilter(void) : private_nh_("~")
 
 void RemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
-    PointCloudTypePtr pc_ptr(new PointCloudType);
+    PointCloudT::Ptr pc_ptr(new PointCloudT);
     pcl::fromROSMsg(*msg, *pc_ptr);
 
     // transform
-    PointCloudTypePtr pc_transformed_ptr(new PointCloudType);
+    PointCloudT::Ptr pc_transformed_ptr(new PointCloudT);
     pcl_ros::transformPointCloud(target_frame_, *pc_ptr, *pc_transformed_ptr, tfListener_);
     random_filter(pc_transformed_ptr, pc_transformed_ptr->size() / 1000);
 
@@ -74,15 +73,15 @@ void RemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg)
     point_cloud_pub_.publish(cloud_msg);
 }
 
-void RemovalFilter::random_filter(PointCloudTypePtr cloud, const int size)
+void RemovalFilter::random_filter(PointCloudT::Ptr cloud, const int size)
 {
-    pcl::RandomSample<PointType> sor;
+    pcl::RandomSample<PointT> sor;
     sor.setInputCloud(cloud);
     sor.setSample(size);
     sor.filter(*cloud);
 }
 
-void RemovalFilter::removal_filter(PointCloudTypePtr cloud)
+void RemovalFilter::removal_filter(PointCloudT::Ptr cloud)
 {
     pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
     sor.setInputCloud(cloud);
