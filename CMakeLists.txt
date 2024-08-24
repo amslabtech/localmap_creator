@@ -267,8 +267,8 @@ target_link_libraries(pc_extractor
 add_executable(virtual_road_projector src/virtual_road_projector.cpp)
 target_link_libraries(virtual_road_projector ${catkin_LIBRARIES})
 
-add_executable(removal_filter src/removal_filter.cpp)
-target_link_libraries(removal_filter
+add_executable(realsense_outlier_removal_filter src/realsense_outlier_removal_filter.cpp)
+target_link_libraries(realsense_outlier_removal_filter
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
 )
