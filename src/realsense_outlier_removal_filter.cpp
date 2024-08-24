@@ -83,6 +83,7 @@ void OutlierRemovalFilter::print_params(void)
 
 void OutlierRemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
+  // convert sensor_msgs::PointCloud2 to pcl::PointCloud
   PointCloudT::Ptr pc_ptr(new PointCloudT);
   pcl::fromROSMsg(*msg, *pc_ptr);
 
@@ -90,7 +91,7 @@ void OutlierRemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr
   PointCloudT::Ptr pc_transformed_ptr(new PointCloudT);
   pcl_ros::transformPointCloud(target_frame_, *pc_ptr, *pc_transformed_ptr, tfListener_);
 
-  // filter
+  // preprocess
   if (params_.remove_underground)
     passthrough_filter(pc_transformed_ptr, "z", -0.05, 3.0);
   random_sample_filter(
@@ -100,13 +101,15 @@ void OutlierRemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr
   if (params_.use_dummy_ground_points)
     add_dummy_ground_points(pc_transformed_ptr, params_.dummy_ground_points_num, params_.dummy_ground_points_size);
 
-  // filter
+  // outlier removal
   outlier_removal_filter(
       pc_transformed_ptr, params_.outlier_removal_num_neighbors, params_.outlier_removal_std_dev_mul_thresh);
 
   // convert pcl::PointCloud to sensor_msgs::PointCloud2
   sensor_msgs::PointCloud2 cloud_msg;
   pcl::toROSMsg(*pc_transformed_ptr, cloud_msg);
+
+  // publish
   cloud_msg.header.stamp = ros::Time::now();
   cloud_msg.header.frame_id = target_frame_;
   point_cloud_pub_.publish(cloud_msg);
