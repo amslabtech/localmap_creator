@@ -1,3 +1,4 @@
+#include <pcl/filters/passthrough.h>
 #include <pcl/filters/random_sample.h>
 #include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/point_types.h>
@@ -18,6 +19,7 @@ protected:
   typedef pcl::PointCloud<PointT> PointCloudT;
 
   void cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg);
+  void passthrough_filter(PointCloudT::Ptr cloud, const std::string &axis, const float min, const float max);
   void random_sample_filter(PointCloudT::Ptr cloud, const int size);
   void add_dummy_ground_points(PointCloudT::Ptr cloud, const int point_num, const float size);
   void outlier_removal_filter(PointCloudT::Ptr cloud, const int num_neighbors, const float std_dev_mul_thresh);
@@ -47,6 +49,9 @@ void OutlierRemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr
   // transform
   PointCloudT::Ptr pc_transformed_ptr(new PointCloudT);
   pcl_ros::transformPointCloud(target_frame_, *pc_ptr, *pc_transformed_ptr, tfListener_);
+
+  // filter
+  passthrough_filter(pc_transformed_ptr, "z", -0.05, 3.0);
   random_sample_filter(pc_transformed_ptr, pc_transformed_ptr->size() / 1000);
 
   // add dummy data
@@ -61,6 +66,16 @@ void OutlierRemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr
   cloud_msg.header.stamp = ros::Time::now();
   cloud_msg.header.frame_id = target_frame_;
   point_cloud_pub_.publish(cloud_msg);
+}
+
+void OutlierRemovalFilter::passthrough_filter(
+    PointCloudT::Ptr cloud, const std::string &axis, const float min, const float max)
+{
+  pcl::PassThrough<PointT> pass;
+  pass.setInputCloud(cloud);
+  pass.setFilterFieldName(axis);
+  pass.setFilterLimits(min, max);
+  pass.filter(*cloud);
 }
 
 void OutlierRemovalFilter::random_sample_filter(PointCloudT::Ptr cloud, const int size)
