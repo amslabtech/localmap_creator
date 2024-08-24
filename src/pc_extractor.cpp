@@ -1,7 +1,7 @@
 /**
  * @file pc_extractor.cpp
  * @author amsl
- * @brief Point cloud extractor class
+ * @brief PointCloud extractor class
  * @copyright Copyright (c) 2024
  */
 

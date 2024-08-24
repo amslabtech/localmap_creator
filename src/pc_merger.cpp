@@ -1,7 +1,7 @@
 /**
  * @file pc_merger.cpp
  * @author amsl
- * @brief Point cloud merger class
+ * @brief PointCloud merger class
  * @copyright Copyright (c) 2024
  */
 
