@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
-class RemovalFilter
+class OutlierRemovalFilter
 {
 public:
-  RemovalFilter(void);
+  OutlierRemovalFilter(void);
 
 protected:
   typedef pcl::PointXYZ PointT;
@@ -20,7 +20,7 @@ protected:
 
   void cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg);
   void random_filter(PointCloudT::Ptr cloud, const int size);
-  void removal_filter(PointCloudT::Ptr cloud);
+  void outlier_removal_filter(PointCloudT::Ptr cloud);
 
   std::string target_frame_;
   ros::NodeHandle nh_;
@@ -30,16 +30,16 @@ protected:
   tf::TransformListener tfListener_;
 };
 
-RemovalFilter::RemovalFilter(void) : private_nh_("~")
+OutlierRemovalFilter::OutlierRemovalFilter(void) : private_nh_("~")
 {
   private_nh_.param<std::string>("target_frame", target_frame_, {"base_link"});
 
-  point_cloud_sub_ =
-      nh_.subscribe("/cloud", 1, &RemovalFilter::cloud_callback, this, ros::TransportHints().reliable().tcpNoDelay());
+  point_cloud_sub_ = nh_.subscribe(
+      "/cloud", 1, &OutlierRemovalFilter::cloud_callback, this, ros::TransportHints().reliable().tcpNoDelay());
   point_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cloud/filtered", 1);
 }
 
-void RemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg)
+void OutlierRemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
   PointCloudT::Ptr pc_ptr(new PointCloudT);
   pcl::fromROSMsg(*msg, *pc_ptr);
@@ -63,7 +63,7 @@ void RemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg)
   pc_transformed_ptr->insert(pc_transformed_ptr->end(), cloud.begin(), cloud.end());
 
   // filter
-  removal_filter(pc_transformed_ptr);
+  outlier_removal_filter(pc_transformed_ptr);
 
   // convert pcl::PointCloud to sensor_msgs::PointCloud2
   sensor_msgs::PointCloud2 cloud_msg;
@@ -73,7 +73,7 @@ void RemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg)
   point_cloud_pub_.publish(cloud_msg);
 }
 
-void RemovalFilter::random_filter(PointCloudT::Ptr cloud, const int size)
+void OutlierRemovalFilter::random_filter(PointCloudT::Ptr cloud, const int size)
 {
   pcl::RandomSample<PointT> sor;
   sor.setInputCloud(cloud);
@@ -81,7 +81,7 @@ void RemovalFilter::random_filter(PointCloudT::Ptr cloud, const int size)
   sor.filter(*cloud);
 }
 
-void RemovalFilter::removal_filter(PointCloudT::Ptr cloud)
+void OutlierRemovalFilter::outlier_removal_filter(PointCloudT::Ptr cloud)
 {
   pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
   sor.setInputCloud(cloud);
@@ -92,8 +92,8 @@ void RemovalFilter::removal_filter(PointCloudT::Ptr cloud)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "removal_filter");
-  RemovalFilter removal_filter;
+  ros::init(argc, argv, "outlier_removal_filter");
+  OutlierRemovalFilter outlier_removal_filter;
   ros::spin();
 
   return 0;
