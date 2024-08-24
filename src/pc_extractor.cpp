@@ -1,3 +1,4 @@
+#include <pcl/filters/passthrough.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>
 #include <ros/ros.h>
@@ -15,7 +16,7 @@ protected:
   typedef pcl::PointCloud<pcl::PointXYZ> PointCloudT;
 
   void cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg);
-  void extract_points(const PointCloudT &cloud);
+  void passthrough_filter(PointCloudT::Ptr cloud, const std::string &axis, const float min, const float max);
 
   double max_height_;
   double min_height_;
@@ -52,17 +53,19 @@ void PcExtractor::cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg)
   pcl::fromROSMsg(*msg, *pc_ptr);
   PointCloudT::Ptr pc_transformed_ptr(new PointCloudT);
   pcl_ros::transformPointCloud(target_frame_, *pc_ptr, *pc_transformed_ptr, tfListener_);
-  extract_points(*pc_transformed_ptr);
+  passthrough_filter(pc_transformed_ptr, "z", min_height_, max_height_);
   cloud_.header.stamp = pc_transformed_ptr->header.stamp;
   point_cloud_pub_.publish(cloud_);
   cloud_.points.clear();
 }
 
-void PcExtractor::extract_points(const PointCloudT &cloud)
+void PcExtractor::passthrough_filter(PointCloudT::Ptr cloud, const std::string &axis, const float min, const float max)
 {
-  for (int i = 0; i < cloud.points.size(); i++)
-    if (min_height_ < cloud.points[i].z && cloud.points[i].z < max_height_)
-      cloud_.points.push_back(cloud.points[i]);
+  pcl::PassThrough<PointT> pass;
+  pass.setInputCloud(cloud);
+  pass.setFilterFieldName(axis);
+  pass.setFilterLimits(min, max);
+  pass.filter(*cloud);
 }
 
 void PcExtractor::process() { ros::spin(); }
