@@ -9,6 +9,18 @@
 #include <string>
 #include <vector>
 
+struct Params
+{
+  std::string target_frame;
+  bool remove_underground;
+  float ramdom_sample_percent;
+  bool use_dummy_ground_points;
+  int dummy_ground_points_num;
+  float dummy_ground_points_size;
+  int outlier_removal_num_neighbors;
+  float outlier_removal_std_dev_mul_thresh;
+};
+
 class OutlierRemovalFilter
 {
 public:
@@ -18,13 +30,15 @@ protected:
   typedef pcl::PointXYZ PointT;
   typedef pcl::PointCloud<PointT> PointCloudT;
 
+  void load_params(void);
+  void print_params(void);
   void cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg);
   void passthrough_filter(PointCloudT::Ptr cloud, const std::string &axis, const float min, const float max);
   void random_sample_filter(PointCloudT::Ptr cloud, const int size);
   void add_dummy_ground_points(PointCloudT::Ptr cloud, const int point_num, const float size);
   void outlier_removal_filter(PointCloudT::Ptr cloud, const int num_neighbors, const float std_dev_mul_thresh);
 
-  std::string target_frame_;
+  Params params_;
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
   ros::Subscriber point_cloud_sub_;
@@ -34,11 +48,37 @@ protected:
 
 OutlierRemovalFilter::OutlierRemovalFilter(void) : private_nh_("~")
 {
-  private_nh_.param<std::string>("target_frame", target_frame_, {"base_link"});
+  load_params();
+  print_params();
 
   point_cloud_sub_ = nh_.subscribe(
       "/cloud", 1, &OutlierRemovalFilter::cloud_callback, this, ros::TransportHints().reliable().tcpNoDelay());
   point_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cloud/filtered", 1);
+}
+
+void OutlierRemovalFilter::load_params(void)
+{
+  private_nh_.param<std::string>("target_frame", params_.target_frame, {"base_link"});
+  private_nh_.param<bool>("remove_underground", params_.remove_underground, {false});
+  private_nh_.param<float>("ramdom_sample_percent", params_.ramdom_sample_percent, {0.1});
+  private_nh_.param<bool>("dummy_ground_points/enable", params_.use_dummy_ground_points, {false});
+  private_nh_.param<int>("dummy_ground_points/num", params_.dummy_ground_points_num, {100});
+  private_nh_.param<float>("dummy_ground_points/size", params_.dummy_ground_points_size, {2.0});
+  private_nh_.param<int>("outlier_removal/num_neighbors", params_.outlier_removal_num_neighbors, {50});
+  private_nh_.param<float>("outlier_removal/std_dev_mul_thresh", params_.outlier_removal_std_dev_mul_thresh, {1.0});
+}
+
+void OutlierRemovalFilter::print_params(void)
+{
+  ROS_INFO("=== Realsense Outlier Removal Filter ===");
+  ROS_INFO_STREAM("target_frame: " << params_.target_frame);
+  ROS_INFO_STREAM("remove_underground: " << params_.remove_underground);
+  ROS_INFO_STREAM("ramdom_sample_percent: " << params_.ramdom_sample_percent);
+  ROS_INFO_STREAM("dummy_ground_points/enable: " << params_.use_dummy_ground_points);
+  ROS_INFO_STREAM("dummy_ground_points/num: " << params_.dummy_ground_points_num);
+  ROS_INFO_STREAM("dummy_ground_points/size: " << params_.dummy_ground_points_size);
+  ROS_INFO_STREAM("outlier_removal/num_neighbors: " << params_.outlier_removal_num_neighbors);
+  ROS_INFO_STREAM("outlier_removal/std_dev_mul_thresh: " << params_.outlier_removal_std_dev_mul_thresh);
 }
 
 void OutlierRemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg)
@@ -51,14 +91,18 @@ void OutlierRemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr
   pcl_ros::transformPointCloud(target_frame_, *pc_ptr, *pc_transformed_ptr, tfListener_);
 
   // filter
-  passthrough_filter(pc_transformed_ptr, "z", -0.05, 3.0);
-  random_sample_filter(pc_transformed_ptr, pc_transformed_ptr->size() / 1000);
+  if (params_.remove_underground)
+    passthrough_filter(pc_transformed_ptr, "z", -0.05, 3.0);
+  random_sample_filter(
+      pc_transformed_ptr, static_cast<int>(pc_transformed_ptr->size() * params_.ramdom_sample_percent / 100));
 
   // add dummy data
-  add_dummy_ground_points(pc_transformed_ptr, 100, 1);
+  if (params_.use_dummy_ground_points)
+    add_dummy_ground_points(pc_transformed_ptr, params_.dummy_ground_points_num, params_.dummy_ground_points_size);
 
   // filter
-  outlier_removal_filter(pc_transformed_ptr, 50, 1.0);
+  outlier_removal_filter(
+      pc_transformed_ptr, params_.outlier_removal_num_neighbors, params_.outlier_removal_std_dev_mul_thresh);
 
   // convert pcl::PointCloud to sensor_msgs::PointCloud2
   sensor_msgs::PointCloud2 cloud_msg;
