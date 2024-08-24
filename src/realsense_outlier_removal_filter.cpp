@@ -19,7 +19,7 @@ protected:
   typedef pcl::PointCloud<PointT> PointCloudT;
 
   void cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg);
-  void random_filter(PointCloudT::Ptr cloud, const int size);
+  void random_sample_filter(PointCloudT::Ptr cloud, const int size);
   void outlier_removal_filter(PointCloudT::Ptr cloud);
 
   std::string target_frame_;
@@ -47,7 +47,7 @@ void OutlierRemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr
   // transform
   PointCloudT::Ptr pc_transformed_ptr(new PointCloudT);
   pcl_ros::transformPointCloud(target_frame_, *pc_ptr, *pc_transformed_ptr, tfListener_);
-  random_filter(pc_transformed_ptr, pc_transformed_ptr->size() / 1000);
+  random_sample_filter(pc_transformed_ptr, pc_transformed_ptr->size() / 1000);
 
   // add dummy data
   pcl::PointCloud<pcl::PointXYZ> cloud;
@@ -73,7 +73,7 @@ void OutlierRemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr
   point_cloud_pub_.publish(cloud_msg);
 }
 
-void OutlierRemovalFilter::random_filter(PointCloudT::Ptr cloud, const int size)
+void OutlierRemovalFilter::random_sample_filter(PointCloudT::Ptr cloud, const int size)
 {
   pcl::RandomSample<PointT> sor;
   sor.setInputCloud(cloud);
