@@ -47,8 +47,8 @@ PcExtractor::PcExtractor(void) : private_nh_("~")
   ROS_INFO_STREAM("min_height: " << min_height_);
 
   point_cloud_sub_ =
-      nh_.subscribe("/cloud_in", 1, &PcExtractor::cloud_callback, this, ros::TransportHints().reliable().tcpNoDelay());
-  point_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cloud_out", 1);
+      nh_.subscribe("/cloud", 1, &PcExtractor::cloud_callback, this, ros::TransportHints().reliable().tcpNoDelay());
+  point_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cloud/extracted", 1);
 }
 
 void PcExtractor::cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg)
