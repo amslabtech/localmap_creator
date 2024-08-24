@@ -20,7 +20,7 @@ protected:
   void cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg);
   void random_sample_filter(PointCloudT::Ptr cloud, const int size);
   void add_dummy_ground_points(PointCloudT::Ptr cloud, const int point_num, const float size);
-  void outlier_removal_filter(PointCloudT::Ptr cloud);
+  void outlier_removal_filter(PointCloudT::Ptr cloud, const int num_neighbors, const float std_dev_mul_thresh);
 
   std::string target_frame_;
   ros::NodeHandle nh_;
@@ -53,7 +53,7 @@ void OutlierRemovalFilter::cloud_callback(const sensor_msgs::PointCloud2ConstPtr
   add_dummy_ground_points(pc_transformed_ptr, 100, 1);
 
   // filter
-  outlier_removal_filter(pc_transformed_ptr);
+  outlier_removal_filter(pc_transformed_ptr, 50, 1.0);
 
   // convert pcl::PointCloud to sensor_msgs::PointCloud2
   sensor_msgs::PointCloud2 cloud_msg;
@@ -84,12 +84,13 @@ void OutlierRemovalFilter::add_dummy_ground_points(PointCloudT::Ptr cloud, const
   cloud->insert(cloud->end(), dummy_cloud.begin(), dummy_cloud.end());
 }
 
-void OutlierRemovalFilter::outlier_removal_filter(PointCloudT::Ptr cloud)
+void OutlierRemovalFilter::outlier_removal_filter(
+    PointCloudT::Ptr cloud, const int num_neighbors, const float std_dev_mul_thresh)
 {
-  pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
+  pcl::StatisticalOutlierRemoval<PointT> sor;
   sor.setInputCloud(cloud);
-  sor.setMeanK(50);
-  sor.setStddevMulThresh(0.8);
+  sor.setMeanK(num_neighbors);
+  sor.setStddevMulThresh(std_dev_mul_thresh);
   sor.filter(*cloud);
 }
 
