@@ -20,7 +20,6 @@ protected:
     typedef pcl::PointCloud<PointType>::Ptr PointCloudTypePtr;
 
     void cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg);
-    void voxel_grid_filter(PointCloudTypePtr cloud, const float leaf_size);
     void random_filter(PointCloudTypePtr cloud, const int size);
     void removal_filter(PointCloudTypePtr cloud);
 
