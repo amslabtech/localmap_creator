@@ -10,6 +10,10 @@
 #include <pcl_ros/transforms.h>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <tf2_eigen/tf2_eigen.h>
 #include <string>
 #include <vector>
 
@@ -32,10 +36,12 @@ protected:
   ros::NodeHandle private_nh_;
   ros::Subscriber point_cloud_sub_;
   ros::Publisher point_cloud_pub_;
-  tf::TransformListener tf_listener_;
+  // tf::TransformListener tf_listener_;
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tf_listener_;
 };
 
-PcExtractor::PcExtractor(void) : private_nh_("~")
+PcExtractor::PcExtractor(void) : private_nh_("~"), tf_listener_(tf_buffer_)
 {
   private_nh_.param<std::string>("target_frame", target_frame_, {"base_link"});
   private_nh_.param<float>("max_height", max_height_, 1.5);
@@ -58,7 +64,19 @@ void PcExtractor::cloud_callback(const sensor_msgs::PointCloud2ConstPtr &msg)
   pcl::fromROSMsg(*msg, *cloud);
 
   // transform
-  pcl_ros::transformPointCloud(target_frame_, *cloud, *cloud, tf_listener_);
+  // pcl_ros::transformPointCloud(target_frame_, *cloud, *cloud, tf_listener_);
+  geometry_msgs::TransformStamped tf;
+  try
+  {
+    tf = tf_buffer_.lookupTransform(target_frame_, msg->header.frame_id, msg->header.stamp);
+    Eigen::Matrix4f transform_matrix = tf2::transformToEigen(tf.transform).matrix().cast<float>();
+    pcl::transformPointCloud(*cloud, *cloud, transform_matrix);
+  }
+  catch(tf2::TransformException& ex)
+  {
+    ROS_WARN("TF Exception: %s", ex.what());
+    return;
+  }
 
   // filter
   passthrough_filter(cloud, "z", min_height_, max_height_);
